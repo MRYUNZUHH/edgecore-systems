@@ -1,47 +1,80 @@
 ﻿import { create } from 'zustand';
-import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+interface UserProfile {
+  id: string;
+  username: string;
+  email?: string;
+  avatar: string;
+  balance: number;
+  vipTier: number;
+  totalBets: number;
+  totalWins: number;
+  totalLosses: number;
+  sessionCount: number;
+  achievements: string[];
+  dailyBonusCollected: boolean;
+  lastActivity: number;
+}
+
+interface BetResult {
+  id: string;
+  gameType: string;
+  betAmount: number;
+  multiplier: number;
+  payout: number;
+  profit: number;
+  timestamp: number;
+  isWin: boolean;
+  gameData: any;
+  nearMiss?: boolean;
+  rngSeed: number;
+}
 
 interface GameStore {
   // Auth
   isLoggedIn: boolean;
-  user: any;
-  token: string | null;
+  user: UserProfile | null;
   
   // Balance & Stats
   balance: any;
-  betHistory: any[];
+  betHistory: BetResult[];
   
   // UI State
-  currentGame: any;
-  currentView: string;
+  currentGame: string | null;
+  currentView: 'lobby' | 'profile';
   sidebarCollapsed: boolean;
   showOperatorView: boolean;
   
   // Actions
-  login: (email: string, password: string) => Promise<any>;
-  register: (email: string, password: string, username: string) => Promise<any>;
+  login: (username: string, password: string) => { success: boolean; error?: string };
+  signup: (username: string, password: string, email?: string) => { success: boolean; error?: string };
   logout: () => void;
-  placeBet: (gameType: string, betAmount: number) => Promise<any>;
-  fetchUserProfile: () => Promise<any>;
-  updateAvatar: (avatar: string) => void;
-  setCurrentGame: (game: any) => void;
-  setCurrentView: (view: string) => void;
+  placeBet: (gameType: string, betAmount: number) => BetResult;
+  setCurrentGame: (game: string | null) => void;
+  setCurrentView: (view: 'lobby' | 'profile') => void;
   toggleSidebar: () => void;
   toggleOperatorView: () => void;
+  collectDailyBonus: () => void;
+  setAvatar: (avatar: string) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
   isLoggedIn: false,
   user: null,
-  token: null,
   
   balance: {
     demoBalance: 10000,
     totalBets: 0,
     totalWins: 0,
     totalLosses: 0,
+    totalWagered: 0,
+    totalPayout: 0,
+    netProfit: 0,
+    personalRTP: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+    worstStreak: 0,
+    sessionStart: Date.now(),
   },
   
   betHistory: [],
@@ -50,109 +83,169 @@ export const useGameStore = create<GameStore>((set, get) => ({
   sidebarCollapsed: false,
   showOperatorView: false,
 
-  login: async (email, password) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth`, {
-        action: 'login',
-        email,
-        password,
+  login: (username, password) => {
+    if (username.length >= 3) {
+      set({
+        isLoggedIn: true,
+        user: {
+          id: 'user-' + username,
+          username,
+          avatar: '😎',
+          balance: 10000,
+          vipTier: 0,
+          totalBets: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          sessionCount: 1,
+          achievements: [],
+          dailyBonusCollected: false,
+          lastActivity: Date.now(),
+        },
+        balance: {
+          demoBalance: 10000,
+          totalBets: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          totalWagered: 0,
+          totalPayout: 0,
+          netProfit: 0,
+          personalRTP: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          worstStreak: 0,
+          sessionStart: Date.now(),
+        },
+        betHistory: [],
       });
-      
-      if (response.data.success) {
-        set({
-          isLoggedIn: true,
-          user: response.data.user,
-          token: response.data.token,
-        });
-        return { success: true };
-      }
-      return { success: false, error: response.data.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+      return { success: true };
     }
+    return { success: false, error: 'Username must be at least 3 characters.' };
   },
 
-  register: async (email, password, username) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth`, {
-        action: 'register',
-        email,
-        password,
-        username,
+  signup: (username, password, email) => {
+    if (username.length >= 3) {
+      set({
+        isLoggedIn: true,
+        user: {
+          id: 'user-' + username,
+          username,
+          email,
+          avatar: '😎',
+          balance: 10000,
+          vipTier: 0,
+          totalBets: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          sessionCount: 1,
+          achievements: [],
+          dailyBonusCollected: false,
+          lastActivity: Date.now(),
+        },
+        balance: {
+          demoBalance: 10000,
+          totalBets: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          totalWagered: 0,
+          totalPayout: 0,
+          netProfit: 0,
+          personalRTP: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          worstStreak: 0,
+          sessionStart: Date.now(),
+        },
+        betHistory: [],
       });
-      
-      if (response.data.success) {
-        set({
-          isLoggedIn: true,
-          user: response.data.user,
-          token: response.data.token,
-        });
-        return { success: true };
-      }
-      return { success: false, error: response.data.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+      return { success: true };
     }
+    return { success: false, error: 'Username must be at least 3 characters.' };
   },
 
-  logout: () => {
+  logout: () => set({
+    isLoggedIn: false,
+    user: null,
+    balance: {
+      demoBalance: 10000,
+      totalBets: 0,
+      totalWins: 0,
+      totalLosses: 0,
+      totalWagered: 0,
+      totalPayout: 0,
+      netProfit: 0,
+      personalRTP: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      worstStreak: 0,
+      sessionStart: Date.now(),
+    },
+    betHistory: [],
+    currentGame: null,
+    currentView: 'lobby',
+  }),
+
+  placeBet: (gameType, betAmount) => {
+    const state = get();
+    const winProbability = 0.06;
+    const isWin = Math.random() < winProbability;
+    const payout = isWin ? betAmount * (0.5 + Math.random() * 2) : 0;
+    const profit = payout - betAmount;
+
+    const result: BetResult = {
+      id: 'bet-' + Date.now(),
+      gameType,
+      betAmount,
+      multiplier: isWin ? payout / betAmount : 0,
+      payout,
+      profit,
+      timestamp: Date.now(),
+      isWin,
+      gameData: {},
+      nearMiss: !isWin && Math.random() < 0.3,
+      rngSeed: Date.now() % 10000,
+    };
+
+    const newBalance = { ...state.balance };
+    newBalance.demoBalance += profit;
+    newBalance.totalBets++;
+    newBalance.totalWins += isWin ? 1 : 0;
+    newBalance.totalLosses += isWin ? 0 : 1;
+    newBalance.totalWagered += betAmount;
+    newBalance.totalPayout += payout;
+    newBalance.netProfit += profit;
+    newBalance.personalRTP = newBalance.totalWagered > 0 ? newBalance.totalPayout / newBalance.totalWagered : 0;
+    newBalance.currentStreak = isWin ? (state.balance.currentStreak > 0 ? state.balance.currentStreak + 1 : 1) : (state.balance.currentStreak < 0 ? state.balance.currentStreak - 1 : -1);
+    newBalance.bestStreak = Math.max(state.balance.bestStreak, isWin ? Math.abs(newBalance.currentStreak) : 0);
+
     set({
-      isLoggedIn: false,
-      user: null,
-      token: null,
-      balance: { demoBalance: 10000, totalBets: 0, totalWins: 0, totalLosses: 0 },
-      betHistory: [],
-      currentGame: null,
-      currentView: 'lobby',
+      balance: newBalance,
+      betHistory: [result, ...state.betHistory].slice(0, 100),
     });
-  },
 
-  placeBet: async (gameType, betAmount) => {
-    try {
-      const response = await axios.post(`${API_URL}/game`, {
-        gameType,
-        betAmount,
-        userId: get().user?.id,
-      });
-      
-      if (response.data.success) {
-        const result = response.data.result;
-        set((state) => ({
-          balance: {
-            ...state.balance,
-            demoBalance: state.balance.demoBalance + result.profit,
-            totalBets: state.balance.totalBets + 1,
-            totalWins: state.balance.totalWins + (result.isWin ? 1 : 0),
-            totalLosses: state.balance.totalLosses + (result.isWin ? 0 : 1),
-          },
-          betHistory: [result, ...state.betHistory].slice(0, 100),
-        }));
-        return result;
-      }
-    } catch (error: any) {
-      console.error('Bet failed:', error);
-    }
-  },
-
-  fetchUserProfile: async () => {
-    try {
-      const response = await axios.get(`${API_URL}/user`);
-      if (response.data.success) {
-        set({ user: response.data.user });
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    }
-  },
-
-  updateAvatar: (avatar) => {
-    set((state) => ({
-      user: { ...state.user, avatar },
-    }));
+    return result;
   },
 
   setCurrentGame: (game) => set({ currentGame: game }),
-  setCurrentView: (view) => set({ currentView: view }),
+  setCurrentView: (view) => set({ currentView: view, currentGame: null }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   toggleOperatorView: () => set((s) => ({ showOperatorView: !s.showOperatorView })),
+
+  collectDailyBonus: () => {
+    const bonus = 500 + Math.floor(Math.random() * 1000);
+    set((state) => ({
+      balance: {
+        ...state.balance,
+        demoBalance: state.balance.demoBalance + bonus,
+      },
+      user: state.user ? {
+        ...state.user,
+        dailyBonusCollected: true,
+        vipTier: Math.min(5, state.user.vipTier + 1),
+      } : null,
+    }));
+  },
+
+  setAvatar: (avatar) => set((state) => ({
+    user: state.user ? { ...state.user, avatar } : null,
+  })),
 }));
