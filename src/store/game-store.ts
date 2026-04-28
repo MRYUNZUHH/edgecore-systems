@@ -1,9 +1,15 @@
-import { create } from "zustand";
-import { Bet, User } from "@prisma/client";
+﻿import { create } from "zustand";
+
+interface Bet {
+  id: string;
+  game: string;
+  amount: number;
+  outcome: string;
+  profit: number;
+  timestamp: string;
+}
 
 interface GameStore {
-  user: (User & { wallet?: any }) | null;
-  setUser: (user: any) => void;
   balance: number;
   setBalance: (b: number) => void;
   bets: Bet[];
@@ -12,8 +18,6 @@ interface GameStore {
 }
 
 export const useGameStore = create<GameStore>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
   balance: 10000,
   setBalance: (balance) => set({ balance }),
   bets: [],

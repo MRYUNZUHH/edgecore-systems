@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Gamepad2, Trophy, Gift, Shield, Wallet, BarChart3, Settings } from "lucide-react";
+import { Home, Gamepad2, Trophy, Gift, Shield, Wallet, BarChart3 } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },

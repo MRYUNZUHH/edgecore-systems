@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import HeroBanner from "@/components/casino/HeroBanner";
 import GameGrid from "@/components/casino/GameGrid";
 import LiveTicker from "@/components/casino/LiveTicker";
@@ -12,7 +12,7 @@ export default function Home() {
         <div className="xl:col-span-2 space-y-6">
           <Suspense fallback={<div>Loading games...</div>}>
             <GameGrid title="EdgeCore Originals" filter="Originals" />
-            <GameGrid title="Trending" filter="Trending" />
+            <GameGrid title="Trending" />
           </Suspense>
         </div>
         <div className="space-y-6">
