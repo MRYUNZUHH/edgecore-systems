@@ -10,6 +10,9 @@ import { CrashGame } from '@/components/games/CrashGame';
 import { RouletteGame } from '@/components/games/RouletteGame';
 import { SlotsGame } from '@/components/games/SlotsGame';
 import { MinesGame } from '@/components/games/MinesGame';
+import { BlackjackGame } from '@/components/games/blackjack/BlackjackGame';
+import { BaccaratGame } from '@/components/games/baccarat/BaccaratGame';
+import { PokerGame } from '@/components/games/poker/PokerGame';
 import { GameLobby } from '@/components/casino/GameLobby';
 import { ProfilePage } from '@/components/casino/ProfilePage';
 import { OperatorDashboard } from '@/components/analytics/OperatorDashboard';
@@ -21,29 +24,41 @@ export default function Home() {
   useEffect(() => { if (!isLoggedIn) router.push('/auth/login'); }, [isLoggedIn]);
   if (!isLoggedIn) return null;
 
+  const renderGame = () => {
+    switch (currentGame) {
+      case 'dice': return <DiceGame />;
+      case 'crash': return <CrashGame />;
+      case 'roulette': return <RouletteGame />;
+      case 'slots': return <SlotsGame />;
+      case 'mines': return <MinesGame />;
+      case 'blackjack': return <BlackjackGame />;
+      case 'baccarat': return <BaccaratGame />;
+      case 'poker': return <PokerGame />;
+      default: return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-navy-950 text-white relative">
       <div className="fixed inset-0 bg-[url('/grid.svg')] opacity-30 pointer-events-none" />
       <TopBar />
       <Sidebar />
-      <main className="pt-16 transition-all duration-300" style={{ marginLeft: sidebarCollapsed ? 72 : 260 }}>
+      <main className="pt-16 transition-all duration-300" style={{ marginLeft: sidebarCollapsed ? 72 : 280 }}>
         <AnimatePresence mode="wait">
           {showOperatorView ? (
-            <motion.div key="op" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><OperatorDashboard /></motion.div>
+            <motion.div key="op" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><OperatorDashboard /></motion.div>
           ) : currentView === 'profile' ? (
-            <motion.div key="prof" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ProfilePage /></motion.div>
+            <motion.div key="prof" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><ProfilePage /></motion.div>
           ) : currentGame ? (
-            <motion.div key="game" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-              {currentGame==='dice'&&<DiceGame/>}{currentGame==='crash'&&<CrashGame/>}{currentGame==='roulette'&&<RouletteGame/>}{currentGame==='slots'&&<SlotsGame/>}{currentGame==='mines'&&<MinesGame/>}
+            <motion.div key="game" initial={{ opacity:0, scale:0.98 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0 }}>
+              {renderGame()}
             </motion.div>
           ) : (
-            <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><GameLobby /></motion.div>
+            <motion.div key="lobby" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><GameLobby /></motion.div>
           )}
         </AnimatePresence>
       </main>
-      <div className="fixed bottom-2 right-2 z-50 opacity-5 hover:opacity-50 transition-opacity">
-        <a href="/terms" className="text-[10px] text-gray-600">Terms</a>
-      </div>
+      <div className="fixed bottom-2 right-2 z-50 opacity-5 hover:opacity-50"><a href="/terms" className="text-[10px] text-gray-600">Terms</a></div>
     </div>
   );
 }

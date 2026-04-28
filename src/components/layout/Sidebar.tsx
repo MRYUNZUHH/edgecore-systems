@@ -1,6 +1,7 @@
 ﻿'use client';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/game-store';
+import { useRouter } from 'next/navigation';
 
 const gameItems = [
   { id: 'lobby', label: '🏠 Lobby', action: 'lobby', category: 'Navigation' },
@@ -9,19 +10,35 @@ const gameItems = [
   { id: 'roulette', label: '🎡 Roulette', action: 'roulette', category: 'Classic' },
   { id: 'slots', label: '🎰 Slots', action: 'slots', category: 'Classic' },
   { id: 'mines', label: '💣 Mines', action: 'mines', category: 'New' },
+  { id: 'blackjack', label: '🃏 Blackjack', action: 'blackjack', category: 'Card Games' },
+  { id: 'baccarat', label: '🎴 Baccarat', action: 'baccarat', category: 'Card Games' },
+  { id: 'poker', label: '🃏 Poker', action: 'poker', category: 'Card Games' },
+  { id: 'sportsbook', label: '🏆 Sportsbook', action: 'sportsbook', category: 'Sports' },
 ];
 
 export default function Sidebar() {
   const { currentGame, setCurrentGame, setCurrentView, balance, user, sidebarCollapsed, toggleSidebar, logout } = useGameStore();
+  const router = useRouter();
 
   const isActive = (id: string) => {
     if (id === 'lobby' && !currentGame) return true;
     return currentGame === id;
   };
 
+  const handleClick = (action: string) => {
+    if (action === 'sportsbook') {
+      router.push('/sportsbook');
+    } else if (action === 'lobby') {
+      setCurrentGame(null);
+      setCurrentView('lobby');
+    } else {
+      setCurrentGame(action);
+    }
+  };
+
   return (
     <motion.aside
-      animate={{ width: sidebarCollapsed ? 72 : 260 }}
+      animate={{ width: sidebarCollapsed ? 72 : 280 }}
       className="fixed left-0 top-0 h-screen bg-gradient-to-b from-purple-950 via-indigo-950 to-slate-950 border-r border-white/10 z-40 flex flex-col transition-all duration-300"
     >
       {/* Avatar & Identity */}
@@ -29,12 +46,8 @@ export default function Sidebar() {
         <div className="text-3xl animate-float">{user?.avatar || '😎'}</div>
         {!sidebarCollapsed && (
           <div className="text-center">
-            <h1 className="text-xl font-bold text-white">{user?.username || 'Player'}</h1>
-            {user && (
-              <span className="text-xs text-yellow-400">
-                VIP {['🥉','🥈','🥇','💎','👑'][user.vipTier]}
-              </span>
-            )}
+            <h1 className="text-xl font-bold text-white">{user?.username}</h1>
+            <span className="text-xs text-yellow-400">VIP {['🥉','🥈','🥇','💎','👑'][user?.vipTier || 0]}</span>
           </div>
         )}
       </div>
@@ -51,7 +64,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-1 hide-scrollbar">
-        {['Navigation', 'Popular', 'Classic', 'New'].map(cat => (
+        {['Navigation', 'Popular', 'Classic', 'New', 'Card Games', 'Sports'].map(cat => (
           <div key={cat}>
             <div className="text-xs text-gray-500 uppercase tracking-wider px-3 py-2 font-bold">{cat}</div>
             {gameItems.filter(g => g.category === cat).map(g => (
@@ -59,10 +72,7 @@ export default function Sidebar() {
                 key={g.id}
                 whileHover={{ scale: 1.02, x: 4 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  if (g.action === 'lobby') { setCurrentGame(null); setCurrentView('lobby'); }
-                  else setCurrentGame(g.action);
-                }}
+                onClick={() => handleClick(g.action)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                   isActive(g.id)
                     ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
@@ -84,7 +94,6 @@ export default function Sidebar() {
         </button>
       </nav>
 
-      {/* Toggle button */}
       <button 
         onClick={toggleSidebar} 
         className="absolute -right-3 top-8 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs z-50 shadow-lg"
