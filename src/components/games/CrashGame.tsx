@@ -2,124 +2,83 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/game-store';
+import { RuleModal } from '@/components/ui/RuleModal';
 
 export function CrashGame() {
   const { placeBet, balance } = useGameStore();
-  const [betAmount, setBetAmount] = useState(100);
+  const [bet, setBet] = useState(100);
   const [multiplier, setMultiplier] = useState(1.0);
-  const [gameState, setGameState] = useState<'idle' | 'running' | 'cashed' | 'crashed'>('idle');
-  const [graphData, setGraphData] = useState<number[]>([1.0]);
-  const crashRef = useRef<number>(0);
-  const timerRef = useRef<NodeJS.Timeout>(null);
+  const [status, setStatus] = useState<'idle'|'running'|'cashed'|'crashed'>('idle');
+  const [graph, setGraph] = useState<number[]>([1.0]);
+  const [showRules, setShowRules] = useState(false);
+  const crashRef = useRef(0);
+  const intervalRef = useRef<NodeJS.Timeout>(null);
 
-  const startGame = useCallback(() => {
-    setGameState('running');
+  const start = useCallback(() => {
+    setStatus('running');
     setMultiplier(1.0);
-    setGraphData([1.0]);
-    crashRef.current = Math.random() < 0.94 ? 1.0 + Math.random() * 0.3 : 2 + Math.random() * 3;
+    setGraph([1.0]);
+    crashRef.current = Math.random() < 0.94 ? 1.0 + Math.random()*0.3 : 2 + Math.random()*3;
   }, []);
 
   useEffect(() => {
-    if (gameState !== 'running') {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-
-    timerRef.current = setInterval(() => {
-      setMultiplier((prev) => {
-        const newMult = prev + 0.01;
-        setGraphData((g) => [...g, newMult]);
-        if (newMult >= crashRef.current) {
-          clearInterval(timerRef.current!);
-          setGameState('crashed');
-          // Fix: placeBet now takes 2 args
-          placeBet('crash', betAmount);
-          return newMult;
+    if (status !== 'running') return;
+    intervalRef.current = setInterval(() => {
+      setMultiplier(prev => {
+        const next = prev + 0.01;
+        setGraph(g => [...g, next]);
+        if (next >= crashRef.current) {
+          clearInterval(intervalRef.current!);
+          setStatus('crashed');
+          placeBet('crash', bet);
+          return next;
         }
-        return newMult;
+        return next;
       });
     }, 100);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [status, bet]);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [gameState, betAmount, placeBet]);
-
-  const cashOut = () => {
-    if (gameState !== 'running') return;
-    clearInterval(timerRef.current!);
-    setGameState('cashed');
-    placeBet('crash', betAmount);
-  };
-
-  const getColor = () => {
-    if (gameState === 'crashed') return 'text-red-500';
-    if (gameState === 'cashed') return 'text-green-400';
-    return 'text-white';
+  const cashout = () => {
+    if (status !== 'running') return;
+    clearInterval(intervalRef.current!);
+    setStatus('cashed');
+    placeBet('crash', bet);
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <div className="glass-panel rounded-2xl p-8">
-        <h2 className="text-3xl font-heading font-bold gold-text mb-8 text-center">📈 Crash</h2>
-        
-        {/* Graph */}
-        <div className="h-48 bg-navy-950 rounded-xl overflow-hidden mb-6 relative border border-white/5">
-          <svg width="100%" height="100%" preserveAspectRatio="none">
+      <div className="glass-panel p-8 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-4xl font-black gold-text">🚀 Crash</h2>
+          <button onClick={() => setShowRules(true)} className="text-sm text-white/60 hover:text-white">How to Play</button>
+        </div>
+        <div className="h-48 bg-black/20 rounded-xl relative overflow-hidden mb-6">
+          <div className="absolute top-4 left-4 text-4xl font-bold text-white">{multiplier.toFixed(2)}x</div>
+          {/* Simple graph */}
+          <svg className="w-full h-full">
             <polyline
               fill="none"
-              stroke={gameState === 'crashed' ? '#ef4444' : '#00ff88'}
+              stroke={status==='crashed'?'#ef4444':'#22c55e'}
               strokeWidth="2"
-              points={graphData.map((v, i) => `${(i / graphData.length) * 100},${100 - (v / Math.max(...graphData, 2)) * 100}`).join(' ')}
+              points={graph.map((v,i)=>`${(i/graph.length)*100},${100-(v/Math.max(...graph,2))*100}`).join(' ')}
             />
           </svg>
-          <div className="absolute top-4 left-4">
-            <motion.span
-              key={multiplier}
-              initial={{ scale: 1.3 }}
-              animate={{ scale: 1 }}
-              className={`text-4xl font-bold ${getColor()}`}
-            >
-              {multiplier.toFixed(2)}x
-            </motion.span>
-          </div>
         </div>
-
-        {/* Controls */}
         <div className="space-y-4">
           <div className="flex gap-2 justify-center">
-            {[10, 50, 100, 500, 1000].map((amt) => (
-              <button
-                key={amt}
-                onClick={() => setBetAmount(amt)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  betAmount === amt ? 'btn-gold' : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                }`}
-              >
-                ${amt}
-              </button>
+            {[10,50,100,500,1000].map(amt => (
+              <button key={amt} onClick={()=>setBet(amt)} className={`px-4 py-2 rounded-xl ${bet===amt?'btn-gold':'bg-white/10 text-white'}`}>${amt}</button>
             ))}
           </div>
-
-          {gameState === 'idle' && (
-            <button onClick={startGame} className="btn-primary w-full py-4 text-lg">
-              Start Game
-            </button>
-          )}
-
-          {gameState === 'running' && (
-            <button onClick={cashOut} className="w-full py-4 bg-red-500 text-white font-bold rounded-xl text-lg hover:bg-red-600 transition">
-              Cash Out ${(betAmount * multiplier).toFixed(2)}
-            </button>
-          )}
-
-          {(gameState === 'crashed' || gameState === 'cashed') && (
-            <button onClick={startGame} className="w-full py-4 bg-white/10 text-white font-bold rounded-xl text-lg">
-              Play Again
-            </button>
-          )}
+          {status==='idle' && <button onClick={start} className="btn-primary w-full py-4">Start</button>}
+          {status==='running' && <button onClick={cashout} className="btn-primary w-full py-4 bg-red-500">Cash Out ${(bet*multiplier).toFixed(0)}</button>}
+          {(status==='crashed'||status==='cashed') && <button onClick={start} className="btn-primary w-full py-4">Play Again</button>}
         </div>
       </div>
+      <RuleModal isOpen={showRules} onClose={()=>setShowRules(false)} title="Crash Rules">
+        <p>Watch the multiplier rise and cash out before it crashes! The earlier you cash out, the safer. The house usually crashes early.</p>
+      </RuleModal>
     </div>
   );
 }

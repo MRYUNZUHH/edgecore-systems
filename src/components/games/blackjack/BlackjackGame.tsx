@@ -2,144 +2,116 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/game-store';
+import { RuleModal } from '@/components/ui/RuleModal';
 
-const suits = ['♠', '♥', '♦', '♣'];
-const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const suits = ['♠','♥','♦','♣'];
+const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
-interface Card {
-  suit: string;
-  value: string;
-  numericValue: number;
+function createDeck() {
+  return suits.flatMap(s => values.map(v => ({ suit: s, value: v, numeric: v==='A'?11:['J','Q','K'].includes(v)?10:parseInt(v)})))
+    .sort(() => Math.random() - 0.5);
 }
 
-function createDeck(): Card[] {
-  return suits.flatMap(suit =>
-    values.map(value => ({
-      suit,
-      value,
-      numericValue: value === 'A' ? 11 : ['J','Q','K'].includes(value) ? 10 : parseInt(value)
-    }))
-  ).sort(() => Math.random() - 0.5);
-}
-
-function handValue(hand: Card[]): number {
-  let total = hand.reduce((sum, card) => sum + card.numericValue, 0);
-  let aces = hand.filter(c => c.value === 'A').length;
+function handValue(hand: any[]) {
+  let total = hand.reduce((s,c) => s + c.numeric, 0);
+  let aces = hand.filter(c => c.value==='A').length;
   while (total > 21 && aces > 0) { total -= 10; aces--; }
   return total;
 }
 
 export function BlackjackGame() {
   const { placeBet, balance } = useGameStore();
-  const [betAmount, setBetAmount] = useState(100);
-  const [deck, setDeck] = useState<Card[]>(createDeck());
-  const [playerHand, setPlayerHand] = useState<Card[]>([]);
-  const [dealerHand, setDealerHand] = useState<Card[]>([]);
-  const [gameState, setGameState] = useState<'bet' | 'playing' | 'stand' | 'over'>('bet');
-  const [message, setMessage] = useState('');
+  const [bet, setBet] = useState(100);
+  const [deck, setDeck] = useState(createDeck());
+  const [player, setPlayer] = useState<any[]>([]);
+  const [dealer, setDealer] = useState<any[]>([]);
+  const [phase, setPhase] = useState<'bet'|'play'|'dealer'|'end'>('bet');
+  const [msg, setMsg] = useState('');
+  const [showRules, setShowRules] = useState(false);
 
   const deal = () => {
-    if (betAmount > balance.demoBalance) return;
-    const newDeck = createDeck();
-    setDeck(newDeck);
-    setPlayerHand([newDeck.pop()!, newDeck.pop()!]);
-    setDealerHand([newDeck.pop()!, newDeck.pop()!]);
-    setGameState('playing');
-    placeBet('blackjack', betAmount);
+    if (bet > balance.demoBalance) return;
+    const d = createDeck();
+    setDeck(d);
+    setPlayer([d.pop()!, d.pop()!]);
+    setDealer([d.pop()!, d.pop()!]);
+    setPhase('play');
+    placeBet('blackjack', bet);
   };
 
   const hit = () => {
-    const newDeck = [...deck];
-    const newPlayer = [...playerHand, newDeck.pop()!];
-    setPlayerHand(newPlayer);
-    setDeck(newDeck);
+    const newPlayer = [...player, deck.pop()!];
+    setPlayer(newPlayer);
     if (handValue(newPlayer) > 21) {
-      setGameState('over');
-      setMessage('Bust! Dealer wins.');
+      setMsg('Bust!');
+      setPhase('end');
     }
   };
 
   const stand = () => {
-    let dealer = [...dealerHand];
+    let dealerHand = [...dealer];
     let currentDeck = [...deck];
-    while (handValue(dealer) < 17) {
-      dealer.push(currentDeck.pop()!);
+    while (handValue(dealerHand) < 17) {
+      dealerHand.push(currentDeck.pop()!);
     }
-    setDealerHand(dealer);
-    setDeck(currentDeck);
-    const playerVal = handValue(playerHand);
-    const dealerVal = handValue(dealer);
-    if (dealerVal > 21 || playerVal > dealerVal) {
-      setMessage('You win!');
-    } else if (playerVal === dealerVal) {
-      setMessage('Push (tie).');
-    } else {
-      setMessage('Dealer wins.');
-    }
-    setGameState('over');
+    setDealer(dealerHand);
+    const pVal = handValue(player);
+    const dVal = handValue(dealerHand);
+    if (dVal > 21 || pVal > dVal) setMsg('You win!');
+    else if (pVal === dVal) setMsg('Push');
+    else setMsg('Dealer wins');
+    setPhase('end');
   };
 
-  const renderCard = (card: Card, hidden = false) => (
-    <div className={`w-16 h-24 rounded-xl border-2 flex flex-col items-center justify-center text-xl font-bold shadow-lg ${hidden ? 'bg-gradient-to-br from-blue-900 to-blue-700 border-blue-400' : 'bg-white text-black border-gray-300'}`}>
-      {hidden ? '?' : <><div>{card.value}</div><div className="text-2xl">{card.suit}</div></>}
+  const Card = ({ card, hidden }: {card?:any, hidden?:boolean}) => (
+    <div className={`w-14 h-20 rounded-xl border-2 flex flex-col items-center justify-center text-lg font-bold ${hidden ? 'bg-blue-800 border-blue-400' : 'bg-white text-black'}`}>
+      {hidden ? '?' : <><span>{card?.value}</span><span className="text-2xl">{card?.suit}</span></>}
     </div>
   );
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <div className="glass-panel rounded-2xl p-8">
-        <h2 className="text-3xl font-heading font-bold gold-text mb-8 text-center">🃏 Blackjack</h2>
-        
-        <div className="mb-6 flex justify-center gap-4">
-          <div className="text-center">
-            <h3 className="text-white mb-2">Dealer ({gameState !== 'bet' ? handValue(dealerHand) : '?'})</h3>
+      <div className="glass-panel p-8 bg-gradient-to-br from-green-500/10 to-blue-500/10">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-4xl font-black gold-text">🃏 Blackjack</h2>
+          <button onClick={()=>setShowRules(true)} className="text-sm text-white/60 hover:text-white">How to Play</button>
+        </div>
+        <div className="flex justify-center gap-8 mb-6">
+          <div>
+            <h3 className="text-white mb-2">Dealer ({phase!=='bet' ? handValue(dealer) : '?'})</h3>
             <div className="flex gap-2">
-              {dealerHand.map((card, i) => (
-                <motion.div key={i} initial={{ opacity:0, y:-20 }} animate={{ opacity:1, y:0 }}>
-                  {renderCard(card, i === 1 && gameState === 'playing')}
-                </motion.div>
-              ))}
+              {dealer.map((c,i) => <Card key={i} card={c} hidden={i===1 && phase==='play'} />)}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-white mb-2">You ({handValue(player)})</h3>
+            <div className="flex gap-2">
+              {player.map((c,i) => <Card key={i} card={c} />)}
             </div>
           </div>
         </div>
-
-        <div className="flex justify-center gap-4 mb-6">
-          <div className="text-center">
-            <h3 className="text-white mb-2">Player ({handValue(playerHand)})</h3>
-            <div className="flex gap-2">
-              {playerHand.map((card, i) => (
-                <motion.div key={i} initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}>
-                  {renderCard(card)}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {message && <p className="text-center text-xl font-bold text-yellow-400 mb-4">{message}</p>}
-
+        {msg && <p className="text-center text-xl font-bold text-yellow-400 mb-4">{msg}</p>}
         <div className="space-y-4">
-          {gameState === 'bet' && (
+          {phase==='bet' && (
             <>
               <div className="flex gap-2 justify-center">
-                {[10,50,100,500].map(amt => (
-                  <button key={amt} onClick={() => setBetAmount(amt)} className={`px-4 py-2 rounded-lg text-sm font-semibold ${betAmount===amt ? 'btn-gold' : 'bg-white/5 text-gray-400'}`}>${amt}</button>
-                ))}
+                {[10,50,100,500].map(a=><button key={a} onClick={()=>setBet(a)} className={`px-4 py-2 rounded-xl ${bet===a?'btn-gold':'bg-white/10 text-white'}`}>${a}</button>)}
               </div>
-              <button onClick={deal} className="btn-primary w-full py-4 text-lg">Deal</button>
+              <button onClick={deal} className="btn-primary w-full py-4">Deal</button>
             </>
           )}
-          {gameState === 'playing' && (
-            <div className="flex gap-4 justify-center">
-              <button onClick={hit} className="btn-primary px-8 py-3">Hit</button>
-              <button onClick={stand} className="btn-gold px-8 py-3">Stand</button>
+          {phase==='play' && (
+            <div className="flex gap-4">
+              <button onClick={hit} className="btn-primary flex-1">Hit</button>
+              <button onClick={stand} className="btn-gold flex-1">Stand</button>
             </div>
           )}
-          {gameState === 'over' && (
-            <button onClick={() => { setGameState('bet'); setDealerHand([]); setPlayerHand([]); setMessage(''); }} className="btn-primary w-full py-3">Play Again</button>
-          )}
+          {phase==='end' && <button onClick={()=>{setPhase('bet');setPlayer([]);setDealer([]);setMsg('')}} className="btn-primary w-full">Play Again</button>}
         </div>
       </div>
+      <RuleModal isOpen={showRules} onClose={()=>setShowRules(false)} title="Blackjack Rules">
+        <p>Get closer to 21 than the dealer without going over. Face cards are 10, Aces are 1 or 11. Dealer stands on 17.</p>
+      </RuleModal>
     </div>
   );
 }

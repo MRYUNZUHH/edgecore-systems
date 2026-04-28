@@ -20,19 +20,13 @@ export default function Sidebar() {
   const { currentGame, setCurrentGame, setCurrentView, balance, user, sidebarCollapsed, toggleSidebar, logout } = useGameStore();
   const router = useRouter();
 
-  const handle = (id: string) => {
-    if (id === 'sportsbook') router.push('/sportsbook');
-    else if (id === 'lobby') { setCurrentGame(null); setCurrentView('lobby'); }
-    else setCurrentGame(id);
-  };
-
   return (
     <motion.aside
       animate={{ width: sidebarCollapsed ? 72 : 280 }}
       className="fixed left-0 top-0 h-screen bg-gradient-to-b from-purple-900/90 via-pink-900/90 to-orange-900/90 backdrop-blur-xl border-r border-white/20 z-40 flex flex-col"
     >
       <div className="p-4 border-b border-white/20 flex items-center gap-3">
-        <motion.span animate={{ scale: [1,1.2,1] }} transition={{ repeat:Infinity, duration:2 }} className="text-2xl">{user?.avatar}</motion.span>
+        <span className="text-2xl">{user?.avatar}</span>
         {!sidebarCollapsed && <span className="text-white font-bold">{user?.username}</span>}
       </div>
       {!sidebarCollapsed && (
@@ -51,7 +45,7 @@ export default function Sidebar() {
               <motion.button
                 key={item.id}
                 whileHover={{ scale:1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                onClick={()=>handle(item.id)}
+                onClick={() => { if (item.id==='sportsbook') router.push('/sportsbook'); else if (item.id==='lobby') { setCurrentGame(null); setCurrentView('lobby'); } else setCurrentGame(item.id); }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${currentGame===item.id ? 'bg-pink-500/30 text-white' : 'text-white/70'}`}
               >
                 <span className="text-lg">{item.label.split(' ')[0]}</span>
@@ -62,6 +56,8 @@ export default function Sidebar() {
         ))}
         <div className="pt-4">
           <button onClick={()=>setCurrentView('profile')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">👤 Profile</button>
+          <button onClick={()=>router.push('/help')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">❓ Help</button>
+          <button onClick={()=>router.push('/faq')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">❔ FAQ</button>
           <button onClick={logout} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">🚪 Logout</button>
         </div>
       </nav>
