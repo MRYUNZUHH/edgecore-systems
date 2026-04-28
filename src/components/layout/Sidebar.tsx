@@ -1,67 +1,46 @@
-﻿'use client';
-import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
-import { useRouter } from 'next/navigation';
+"use client";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, Gamepad2, Trophy, Gift, Shield, Wallet, BarChart3, Settings } from "lucide-react";
 
-const items = [
-  { id:'lobby', label:'🏠 Lobby', cat:'Navigation' },
-  { id:'dice', label:'🎲 Dice', cat:'Popular' },
-  { id:'crash', label:'📈 Crash', cat:'Popular' },
-  { id:'roulette', label:'🎡 Roulette', cat:'Classic' },
-  { id:'slots', label:'🎰 Slots', cat:'Classic' },
-  { id:'mines', label:'💣 Mines', cat:'New' },
-  { id:'blackjack', label:'🃏 Blackjack', cat:'Card' },
-  { id:'baccarat', label:'🎴 Baccarat', cat:'Card' },
-  { id:'poker', label:'♥️ Poker', cat:'Card' },
-  { id:'sportsbook', label:'🏆 Sports', cat:'Sports' },
+const navItems = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/casino", label: "Casino", icon: Gamepad2 },
+  { href: "/sportsbook", label: "Sportsbook", icon: Trophy },
+  { href: "/vip", label: "VIP", icon: Shield },
+  { href: "/promotions", label: "Promotions", icon: Gift },
+  { href: "/wallet", label: "Wallet", icon: Wallet },
+  { href: "/admin", label: "Admin", icon: BarChart3, adminOnly: true },
 ];
 
 export default function Sidebar() {
-  const { currentGame, setCurrentGame, setCurrentView, balance, user, sidebarCollapsed, toggleSidebar, logout } = useGameStore();
-  const router = useRouter();
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <motion.aside
-      animate={{ width: sidebarCollapsed ? 72 : 280 }}
-      className="fixed left-0 top-0 h-screen bg-gradient-to-b from-purple-900/90 via-pink-900/90 to-orange-900/90 backdrop-blur-xl border-r border-white/20 z-40 flex flex-col"
-    >
-      <div className="p-4 border-b border-white/20 flex items-center gap-3">
-        <span className="text-2xl">{user?.avatar}</span>
-        {!sidebarCollapsed && <span className="text-white font-bold">{user?.username}</span>}
+    <aside className="hidden lg:flex flex-col w-64 bg-gradient-to-b from-purple-950 via-indigo-950 to-slate-950 border-r border-white/10 p-4">
+      <div className="flex items-center gap-2 mb-8 px-2">
+        <div className="w-8 h-8 bg-gradient-to-br from-gold-400 to-yellow-600 rounded-lg flex items-center justify-center font-bold text-black text-lg">◆</div>
+        <span className="text-xl font-heading font-bold gold-text">EDGECORE</span>
       </div>
-      {!sidebarCollapsed && (
-        <div className="p-4 border-b border-white/20">
-          <div className="bg-white/10 rounded-xl p-3">
-            <div className="text-xs text-white/60">Balance</div>
-            <div className="text-xl font-bold text-green-400">${balance.demoBalance.toLocaleString()}</div>
-          </div>
-        </div>
-      )}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {['Navigation','Popular','Classic','New','Card','Sports'].map(cat => (
-          <div key={cat}>
-            <div className="text-xs text-white/50 uppercase px-3 py-2">{cat}</div>
-            {items.filter(i=>i.cat===cat).map(item => (
-              <motion.button
-                key={item.id}
-                whileHover={{ scale:1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                onClick={() => { if (item.id==='sportsbook') router.push('/sportsbook'); else if (item.id==='lobby') { setCurrentGame(null); setCurrentView('lobby'); } else setCurrentGame(item.id); }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${currentGame===item.id ? 'bg-pink-500/30 text-white' : 'text-white/70'}`}
-              >
-                <span className="text-lg">{item.label.split(' ')[0]}</span>
-                {!sidebarCollapsed && item.label.split(' ').slice(1).join(' ')}
-              </motion.button>
-            ))}
-          </div>
-        ))}
-        <div className="pt-4">
-          <button onClick={()=>setCurrentView('profile')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">👤 Profile</button>
-          <button onClick={()=>router.push('/help')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">❓ Help</button>
-          <button onClick={()=>router.push('/faq')} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">❔ FAQ</button>
-          <button onClick={logout} className="w-full flex gap-2 text-white/70 hover:text-white px-3 py-2">🚪 Logout</button>
-        </div>
+      <nav className="flex-1 space-y-1">
+        {navItems.map(item => {
+          if (item.adminOnly && !isAdmin) return null;
+          const Icon = item.icon;
+          return (
+            <Link key={item.href} href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${pathname === item.href ? 'bg-white/10 text-gold-400' : 'text-white/70 hover:text-white hover:bg-white/5'} `}>
+              <Icon className="w-5 h-5" />
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
-      <button onClick={toggleSidebar} className="absolute -right-3 top-8 w-6 h-6 bg-pink-500 rounded-full text-white">◀</button>
-    </motion.aside>
+      <div className="mt-auto pt-4 border-t border-white/10 text-xs text-white/40">
+        Demo Mode Only · No Real Money
+      </div>
+    </aside>
   );
 }

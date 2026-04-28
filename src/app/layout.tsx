@@ -1,33 +1,25 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/layout/Providers";
+import AppShell from "@/components/layout/AppShell";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  variable: "--font-cinzel",
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", weight: ["400","500","600","700"] });
 
 export const metadata: Metadata = {
-  title: "EdgeCore Casino | Premium Gaming Platform",
-  description: "Experience world-class casino gaming. Play Dice, Crash, Roulette, Slots, and Mines with live action.",
+  title: "EdgeCore Systems | Premium iGaming Platform",
+  description: "Experience the future of online gaming. Demo mode only.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased bg-navy-900 text-white">
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
+      </body>
     </html>
   );
 }
