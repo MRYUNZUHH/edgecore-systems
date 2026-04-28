@@ -2,50 +2,36 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/game-store';
+import { motion } from 'framer-motion';
 
 export default function SignupPage() {
-  const [u, setU] = useState('');
-  const [p, setP] = useState('');
+  const [u, setU] = useState(''); const [p, setP] = useState('');
   const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(false);
   const signup = useGameStore(s => s.signup);
   const router = useRouter();
 
-  const handleSignup = async () => {
-    if (u.length < 3) {
-      setErr('Username must be at least 3 characters.');
-      return;
-    }
-    setLoading(true);
-    setErr('');
-    const result = await signup(u, p, u);
-    if (result.success) {
-      router.push('/');
-    } else {
-      setErr(result.error || 'Signup failed. Try again.');
-    }
-    setLoading(false);
+  const handleSignup = () => {
+    if (u.length < 3) { setErr('Username too short'); return; }
+    const result = signup(u, p, u);
+    if (result.success) router.push('/');
+    else setErr(result.error || 'Signup failed');
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-orange-700 flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+      <motion.div initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }} className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-gold"><span className="text-2xl">◆</span></div>
-          <h1 className="text-3xl font-heading font-bold gold-text">EDGECORE</h1>
+          <motion.div animate={{ rotate: [0,10,-10,0] }} transition={{ repeat:Infinity, duration:3 }} className="text-6xl mb-4">🎰</motion.div>
+          <h1 className="text-4xl font-black gold-text">EDGECORE</h1>
+          <p className="text-white/70 mt-2">Join the winners</p>
         </div>
-        <div className="glass-panel rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Create account</h2>
-          <p className="text-gray-400 mb-6">Join EdgeCore Casino</p>
-          {err && <p className="text-lose text-sm mb-4">{err}</p>}
-          <input value={u} onChange={e => setU(e.target.value)} placeholder="Username" className="w-full p-3 bg-navy-900 border border-white/10 rounded-lg text-white mb-3 focus:border-gold-400/50 focus:outline-none" />
-          <input value={p} onChange={e => setP(e.target.value)} type="password" placeholder="Password" className="w-full p-3 bg-navy-900 border border-white/10 rounded-lg text-white mb-6 focus:border-gold-400/50 focus:outline-none" />
-          <button onClick={handleSignup} disabled={loading} className="btn-gold w-full py-3 text-lg disabled:opacity-50">
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-          <p className="text-center text-gray-400 mt-4 text-sm">Have an account? <a href="/auth/login" className="text-gold-400">Login</a></p>
-        </div>
-      </div>
+        {err && <p className="text-red-300 text-sm mb-4">{err}</p>}
+        <input value={u} onChange={e => setU(e.target.value)} placeholder="Username" className="w-full p-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/50 mb-3" />
+        <input value={p} onChange={e => setP(e.target.value)} type="password" placeholder="Password" className="w-full p-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/50 mb-6" />
+        <button onClick={handleSignup} className="btn-primary w-full py-3 text-lg">Create Account</button>
+        <p className="text-center text-white/70 mt-4 text-sm">Already a member? <a href="/auth/login" className="text-gold-400 font-bold">Login</a></p>
+      </motion.div>
     </div>
   );
 }

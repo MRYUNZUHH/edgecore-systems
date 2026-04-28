@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/game-store';
 import { motion, AnimatePresence } from 'framer-motion';
+import Particles from 'react-tsparticles';
+import { loadSlim } from 'tsparticles-slim';
 import Sidebar from '@/components/layout/Sidebar';
 import TopBar from '@/components/layout/TopBar';
 import { DiceGame } from '@/components/games/DiceGame';
@@ -16,12 +18,20 @@ import { PokerGame } from '@/components/games/poker/PokerGame';
 import { GameLobby } from '@/components/casino/GameLobby';
 import { ProfilePage } from '@/components/casino/ProfilePage';
 import { OperatorDashboard } from '@/components/analytics/OperatorDashboard';
+import type { Engine } from 'tsparticles-engine';
 
 export default function Home() {
   const { isLoggedIn, currentGame, currentView, showOperatorView, sidebarCollapsed } = useGameStore();
   const router = useRouter();
 
-  useEffect(() => { if (!isLoggedIn) router.push('/auth/login'); }, [isLoggedIn]);
+  const particlesInit = async (engine: Engine) => {
+    await loadSlim(engine);
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn) router.push('/auth/login');
+  }, [isLoggedIn]);
+
   if (!isLoggedIn) return null;
 
   const renderGame = () => {
@@ -39,11 +49,26 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 text-white relative">
-      <div className="fixed inset-0 bg-[url('/grid.svg')] opacity-30 pointer-events-none" />
+    <div className="min-h-screen text-white relative">
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={{
+          fpsLimit: 60,
+          particles: {
+            number: { value: 30 },
+            color: { value: ['#fbbf24', '#ec4899', '#a855f7', '#22c55e'] },
+            shape: { type: 'circle' },
+            opacity: { value: 0.3 },
+            size: { value: 3 },
+            move: { enable: true, speed: 1 },
+          },
+          interactivity: { events: { onHover: { enable: true, mode: 'repulse' } } },
+        }}
+      />
       <TopBar />
       <Sidebar />
-      <main className="pt-16 transition-all duration-300" style={{ marginLeft: sidebarCollapsed ? 72 : 280 }}>
+      <main className="relative z-10 pt-16 transition-all duration-300" style={{ marginLeft: sidebarCollapsed ? 72 : 280 }}>
         <AnimatePresence mode="wait">
           {showOperatorView ? (
             <motion.div key="op" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><OperatorDashboard /></motion.div>
@@ -58,7 +83,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </main>
-      <div className="fixed bottom-2 right-2 z-50 opacity-5 hover:opacity-50"><a href="/terms" className="text-[10px] text-gray-600">Terms</a></div>
     </div>
   );
 }
