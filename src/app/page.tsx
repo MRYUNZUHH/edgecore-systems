@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { useGameStore } from "@/store/game-store";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
 import HeroBanner from "@/components/casino/HeroBanner";
@@ -7,11 +8,10 @@ import LiveTicker from "@/components/casino/LiveTicker";
 import VIPProgress from "@/components/casino/VIPProgress";
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { isLoggedIn } = useGameStore();
   const router = useRouter();
 
-  if (status === "loading") return <div className="p-8">Loadingâ€¦</div>;
-  if (!session) {
+  if (!isLoggedIn) {
     router.push("/auth/login");
     return null;
   }
@@ -21,7 +21,7 @@ export default function Home() {
       <HeroBanner />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
-          <Suspense fallback={<div>Loading gamesâ€¦</div>}>
+          <Suspense fallback={<div>Loading games…</div>}>
             <GameGrid title="EdgeCore Originals" filter="Originals" />
             <GameGrid title="Trending" />
           </Suspense>

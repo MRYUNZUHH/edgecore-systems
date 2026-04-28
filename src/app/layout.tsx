@@ -1,7 +1,7 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/layout/Providers";
+
 import AppShell from "@/components/layout/AppShell";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -16,9 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <body className="antialiased">
-        <Providers>
+        
           <AppShell>{children}</AppShell>
-        </Providers>
+        
       </body>
     </html>
   );

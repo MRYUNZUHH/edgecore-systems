@@ -1,4 +1,5 @@
-﻿'use client';
+"use client";
+'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/store/game-store';

@@ -1,4 +1,5 @@
-﻿'use client';
+"use client";
+'use client';
 import { useGameStore } from '@/store/game-store';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
