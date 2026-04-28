@@ -11,7 +11,7 @@ export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  if (status === "loading") return <div className="p-8">Loading…</div>;
+  if (status === "loading") return <div className="p-8">Loadingâ€¦</div>;
   if (!session) {
     router.push("/auth/login");
     return null;
@@ -22,7 +22,7 @@ export default function Home() {
       <HeroBanner />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
-          <Suspense fallback={<div>Loading games…</div>}>
+          <Suspense fallback={<div>Loading gamesâ€¦</div>}>
             <GameGrid title="EdgeCore Originals" filter="Originals" />
             <GameGrid title="Trending" />
           </Suspense>

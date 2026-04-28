@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import Sidebar from "./Sidebar";
 import TopNav from "./TopNav";
 import MobileNav from "./MobileNav";
