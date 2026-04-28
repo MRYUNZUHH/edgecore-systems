@@ -1,59 +1,12 @@
-﻿@import "tailwindcss";
-
-/* === CASINO PREMIUM THEME === */
-@theme inline {
-  /* Typography */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
-  --font-heading: var(--font-cinzel), serif;
-  
-  /* Core palette */
-  --color-navy-950: #06060d;
-  --color-navy-900: #0a0a15;
-  --color-navy-850: #0d0d1a;
-  --color-navy-800: #111122;
-  --color-navy-750: #161630;
-  
-  /* Gold accents (premium luxury) */
-  --color-gold-400: #d4af37;
-  --color-gold-500: #c6a448;
-  --color-gold-600: #b8942f;
-  --color-gold-700: #a07d28;
-  
-  /* Neon green (action/CTA/wins) */
-  --color-neon-400: #00ff88;
-  --color-neon-500: #00e67a;
-  --color-neon-600: #00cc66;
-  
-  /* Electric blue (secondary) */
-  --color-electric-400: #3b82f6;
-  --color-electric-500: #2563eb;
-  
-  /* Semantic */
-  --color-win: #00ff88;
-  --color-lose: #ef4444;
-  --color-hot: #f43f5e;
-  
-  /* Glass */
-  --color-glass: rgba(255, 255, 255, 0.06);
-  --color-glass-border: rgba(255, 255, 255, 0.10);
-  --color-glass-hover: rgba(255, 255, 255, 0.10);
-  
-  /* Shadows */
-  --shadow-glow: 0 0 20px rgba(0, 255, 136, 0.25);
-  --shadow-glow-strong: 0 0 35px rgba(0, 255, 136, 0.40);
-  --shadow-gold: 0 0 30px rgba(212, 175, 55, 0.30);
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
-  
-  /* Border radius */
-  --radius-card: 1rem;
-  --radius-button: 0.75rem;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* === BASE STYLES === */
 body {
-  background-color: var(--color-navy-950);
+  background-color: #06060d;
   color: #e5e7eb;
-  font-family: var(--font-sans);
+  font-family: var(--font-inter), ui-sans-serif, system-ui;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -64,93 +17,96 @@ body {
 ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
 
+/* === CUSTOM COMPONENTS === */
+@layer components {
+  .glass-panel {
+    background: rgba(17, 17, 34, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: rgba(22, 22, 48, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+    transform: translateY(-4px);
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .neon-text {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    color: #000;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 0 35px rgba(0, 255, 136, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
+    color: #000;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gold:hover {
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* === CUSTOM ANIMATIONS === */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
+
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); }
   50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.5); }
 }
+
 @keyframes border-glow {
   0%, 100% { border-color: rgba(212, 175, 55, 0.3); }
   50% { border-color: rgba(212, 175, 55, 0.7); }
 }
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
+
 @keyframes slide-in-right {
   from { opacity: 0; transform: translateX(20px); }
   to { opacity: 1; transform: translateX(0); }
 }
-
-/* === UTILITY CLASSES === */
-.animate-float { animation: float 3s ease-in-out infinite; }
-.animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
-.animate-border-glow { animation: border-glow 2s ease-in-out infinite; }
-
-.glass-panel {
-  background: rgba(17, 17, 34, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-  background: rgba(22, 22, 48, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.3s ease;
-}
-.glass-card:hover {
-  border-color: rgba(212, 175, 55, 0.4);
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
-  transform: translateY(-4px);
-}
-
-.gold-text {
-  background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.neon-text {
-  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
-  color: #000;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-}
-.btn-primary:hover {
-  box-shadow: 0 0 35px rgba(0, 255, 136, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn-gold {
-  background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
-  color: #000;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-}
-.btn-gold:hover {
-  box-shadow: 0 0 35px rgba(212, 175, 55, 0.4);
-  transform: translateY(-1px);
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.hide-scrollbar::-webkit-scrollbar { display: none; }
