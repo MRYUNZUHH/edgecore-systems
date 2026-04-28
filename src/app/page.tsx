@@ -1,5 +1,4 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
 import HeroBanner from "@/components/casino/HeroBanner";
