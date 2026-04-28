@@ -18,6 +18,7 @@ export const authOptions = {
           where: { username: credentials.username },
         });
         if (!user) return null;
+        // plain-text comparison for simulation
         if (user.password === credentials.password) {
           return { id: user.id, name: user.username, email: user.email, role: user.role };
         }
@@ -27,11 +28,17 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) { token.role = user.role; token.id = user.id; }
+      if (user) {
+        token.role = user.role;
+        token.id = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) { session.user.role = token.role; session.user.id = token.id; }
+      if (token && session.user) {
+        session.user.role = token.role;
+        session.user.id = token.id;
+      }
       return session;
     },
   },
