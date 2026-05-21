@@ -1,15 +1,13 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Gamepad2, Wallet, User } from "lucide-react";
-
 const links = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/casino", icon: Gamepad2, label: "Casino" },
   { href: "/wallet", icon: Wallet, label: "Wallet" },
   { href: "/profile", icon: User, label: "Profile" },
 ];
-
 export default function MobileNav() {
   const pathname = usePathname();
   return (
@@ -17,10 +15,8 @@ export default function MobileNav() {
       {links.map(link => {
         const Icon = link.icon;
         return (
-          <Link key={link.href} href={link.href}
-            className={`flex flex-col items-center text-xs ${pathname === link.href ? "text-gold-400" : "text-white/60"}`}>
-            <Icon className="w-5 h-5" />
-            <span>{link.label}</span>
+          <Link key={link.href} href={link.href} className={`flex flex-col items-center text-xs ${pathname === link.href ? "text-gold-400" : "text-white/60"}`}>
+            <Icon className="w-5 h-5" /> {link.label}
           </Link>
         );
       })}
