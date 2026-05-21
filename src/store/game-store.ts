@@ -2,65 +2,66 @@ import { create } from "zustand";
 
 export interface GameStore {
   isLoggedIn: boolean;
-  user: { username: string; role: string; balance: number; bonusBalance: number; vipLevel: number; country: string; language: string; wageringRequirement: number } | null;
-  balance: number;
-  bonusBalance: number;
-  wageringRequirement: number;
+  user: { username: string; role: string; country: string; vipLevel: number; kycVerified: boolean } | null;
+  wallet: { cashBalance: number; bonusBalance: number; wageringRequirement: number; lockedFunds: number };
+  betHistory: any[];
   login: (username: string, password: string) => { success: boolean; error?: string };
   signup: (username: string, password: string) => { success: boolean; error?: string };
   logout: () => void;
-  placeBet: (game: string, amount: number) => { win: boolean; payout: number };
-  betHistory: { id: string; game: string; amount: number; outcome: string; profit: number; timestamp: string }[];
-  addBet: (bet: any) => void;
+  placeBet: (gameId: string, amount: number) => { success: boolean; result?: any; error?: string };
+  addDemoFunds: (amount: number) => void;
 }
+
+const DEFAULT_WALLET = { cashBalance: 10000, bonusBalance: 0, wageringRequirement: 0, lockedFunds: 0 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
   isLoggedIn: false,
   user: null,
-  balance: 10000,
-  bonusBalance: 0,
-  wageringRequirement: 0,
+  wallet: DEFAULT_WALLET,
   betHistory: [],
-  
+
   login: (username, password) => {
     if (username.length < 3) return { success: false, error: "Username too short" };
     const isAdmin = username === "admin" && password === "admin";
     set({
       isLoggedIn: true,
-      user: { username, role: isAdmin ? "admin" : "user", balance: 10000, bonusBalance: isAdmin ? 0 : 5000, vipLevel: isAdmin ? 5 : 0, country: "global", language: "en", wageringRequirement: isAdmin ? 0 : 15000 },
-      balance: 10000,
-      bonusBalance: isAdmin ? 0 : 5000,
-      wageringRequirement: isAdmin ? 0 : 15000,
+      user: { username, role: isAdmin ? "admin" : "user", country: "global", vipLevel: isAdmin ? 5 : 0, kycVerified: isAdmin },
+      wallet: { cashBalance: isAdmin ? 50000 : 10000, bonusBalance: isAdmin ? 0 : 5000, wageringRequirement: isAdmin ? 0 : 15000, lockedFunds: 0 },
+      betHistory: [],
     });
     return { success: true };
   },
-  
+
   signup: (username, password) => {
     if (username.length < 3) return { success: false, error: "Username too short" };
     set({
       isLoggedIn: true,
-      user: { username, role: "user", balance: 10000, bonusBalance: 5000, vipLevel: 0, country: "global", language: "en", wageringRequirement: 15000 },
-      balance: 10000,
-      bonusBalance: 5000,
-      wageringRequirement: 15000,
+      user: { username, role: "user", country: "global", vipLevel: 0, kycVerified: false },
+      wallet: { cashBalance: 10000, bonusBalance: 5000, wageringRequirement: 15000, lockedFunds: 0 },
+      betHistory: [],
     });
     return { success: true };
   },
-  
-  logout: () => set({ isLoggedIn: false, user: null, balance: 10000, bonusBalance: 0, betHistory: [] }),
-  
-  placeBet: (game, amount) => {
-    const state = get();
-    if (amount > state.balance) return { win: false, payout: 0 };
+
+  logout: () => set({ isLoggedIn: false, user: null, wallet: DEFAULT_WALLET, betHistory: [] }),
+
+  placeBet: (gameId, amount) => {
+    const { wallet } = get();
+    if (amount > (wallet?.cashBalance || 0)) return { success: false, error: "Insufficient funds" };
+    
     const win = Math.random() > 0.06;
     const payout = win ? amount * (Math.random() * 2 + 0.5) : 0;
     const profit = payout - amount;
+    
     set({
-      balance: state.balance + profit,
-      betHistory: [{ id: Date.now().toString(), game, amount, outcome: win ? "win" : "loss", profit, timestamp: new Date().toISOString() }, ...state.betHistory].slice(0, 50)
+      wallet: { ...wallet, cashBalance: (wallet?.cashBalance || 0) + profit },
+      betHistory: [{ id: Date.now().toString(), gameId, amount, outcome: win ? 'win' : 'loss', profit, timestamp: new Date().toISOString() }, ...get().betHistory].slice(0, 50),
     });
-    return { win, payout };
+    return { success: true, result: { win, payout } };
   },
-  
-  addBet: (bet) => set((state) => ({ betHistory: [bet, ...state.betHistory].slice(0, 50) })),
+
+  addDemoFunds: (amount) => {
+    const { wallet } = get();
+    set({ wallet: { ...(wallet || DEFAULT_WALLET), cashBalance: (wallet?.cashBalance || 0) + amount } });
+  },
 }));
