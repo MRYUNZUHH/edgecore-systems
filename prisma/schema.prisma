@@ -14,15 +14,17 @@ model User {
   password      String?
   role          String    @default("USER")
   demoBalance   Float     @default(10000)
+  bonusBalance  Float     @default(0)
+  wageringReq   Float     @default(0)
   vipLevel      Int       @default(0)
-  avatar        String    @default("😎")
+  kycVerified   Boolean   @default(false)
+  country       String    @default("global")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
   bets          Bet[]
   transactions  Transaction[]
-  wallet        Wallet?
 }
 
 model Account {
@@ -56,12 +58,16 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Wallet {
+model Bet {
   id          String   @id @default(cuid())
-  userId      String   @unique
-  demoBalance Float    @default(10000)
+  userId      String
+  gameId      String
+  amount      Float
+  payout      Float
+  multiplier  Float
+  outcome     String
+  profit      Float
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -86,44 +92,7 @@ model Game {
   rtp         Float    @default(96.0)
   houseEdge   Float    @default(4.0)
   volatility  String   @default("MEDIUM")
-  thumbnail   String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  bets        Bet[]
-}
-
-model Bet {
-  id          String   @id @default(cuid())
-  userId      String
-  gameId      String?
-  amount      Float
-  payout      Float
-  multiplier  Float
-  outcome     String?
-  profit      Float
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game        Game?    @relation(fields: [gameId], references: [id])
-}
-
-model Promotion {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  type        String
-  startsAt    DateTime
-  endsAt      DateTime
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  actorId   String?
-  action    String
-  entity    String?
-  metadata  Json?
-  createdAt DateTime @default(now())
 }
