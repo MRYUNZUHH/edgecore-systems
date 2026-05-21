@@ -1,90 +1,80 @@
 "use client";
 import { useGameStore } from "@/store/game-store";
 import { useRouter } from "next/navigation";
+import CyberHero from "@/components/cyber/CyberHero";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { TrendingUp, Users, BarChart3, ArrowRight } from "lucide-react";
+
+const categories = [
+  { title: "🎰 Slots", href: "/casino?cat=slots", color: "from-purple-600 to-pink-600" },
+  { title: "🃏 Tables", href: "/casino?cat=table", color: "from-blue-600 to-cyan-600" },
+  { title: "⚡ Crash", href: "/casino?cat=crash", color: "from-orange-600 to-red-600" },
+  { title: "🔴 Live", href: "/live-casino", color: "from-red-600 to-rose-600" },
+  { title: "📊 Predict", href: "/predictions", color: "from-green-600 to-emerald-600" },
+  { title: "🐎 Virtual", href: "/virtual", color: "from-indigo-600 to-violet-600" },
+];
 
 export default function Home() {
   const { isLoggedIn } = useGameStore();
   const router = useRouter();
-  const [trendingMarkets, setTrendingMarkets] = useState<any[]>([]);
-  
+  const [trending, setTrending] = useState<any[]>([]);
+
   useEffect(() => {
     if (!isLoggedIn) { router.push("/auth/login"); return; }
-    
-    const fetchTrending = async () => {
-      try {
-        const res = await fetch("/api/predictions/trending", { cache: "no-store" });
-        const data = await res.json();
-        setTrendingMarkets(data.slice(0, 4));
-      } catch {}
-    };
-    fetchTrending();
-    const interval = setInterval(fetchTrending, 5000);
-    return () => clearInterval(interval);
+    fetch("/api/predictions/trending", { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setTrending(d.slice(0, 3)))
+      .catch(() => {});
   }, [isLoggedIn]);
 
   if (!isLoggedIn) return null;
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-        className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 p-8 lg:p-12 shadow-2xl">
-        <div className="relative z-10 max-w-xl">
-          <h1 className="text-4xl lg:text-5xl font-black text-white leading-tight">
-            <span className="gold-text">EdgeCore</span> Predictions
-          </h1>
-          <p className="text-white/80 mt-4 text-lg">Trade on the outcome of real-world events. Sports, crypto, politics, and more.</p>
-          <Link href="/markets" className="inline-flex items-center gap-2 mt-6 btn-primary text-lg px-8 py-3">
-            Explore Markets <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
-        <div className="absolute top-0 right-0 text-[180px] opacity-10">📊</div>
-      </motion.div>
+    <div className="space-y-10">
+      {/* Cinematic Hero */}
+      <CyberHero />
 
-      {/* Trending Markets */}
-      <div>
-        <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-2">
-          <TrendingUp className="w-6 h-6 text-gold-400" />
-          Trending Markets
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {trendingMarkets.map((market: any) => (
-            <motion.div key={market.id} whileHover={{ scale:1.02 }}
-              className="glass-card p-4 rounded-2xl space-y-3 cursor-pointer">
-              <span className="text-xs bg-white/10 text-gray-300 px-2 py-0.5 rounded-full capitalize">{market.category}</span>
-              <h3 className="text-white font-bold text-sm">{market.question}</h3>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-neon-400 font-bold">YES {market.yesPrice}¢</span>
-                <span className="text-gray-400">Vol ${(market.volume/1000).toFixed(0)}K</span>
-              </div>
+      {/* Category grid — asymmetrical */}
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          {categories.map((cat, i) => (
+            <motion.div
+              key={cat.href}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+            >
+              <Link href={cat.href}
+                className={`block bg-gradient-to-br ${cat.color} rounded-2xl p-4 text-center hover:scale-105 transition-transform`}>
+                <span className="text-2xl block mb-1">{cat.title.split(' ')[0]}</span>
+                <span className="text-white font-bold text-xs">{cat.title.split(' ').slice(1).join(' ')}</span>
+              </Link>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Link href="/casino" className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-4 hover:scale-105 transition">
-          <h3 className="text-white font-bold">🎰 Casino</h3>
-          <p className="text-white/60 text-xs mt-1">Slots & Table Games</p>
-        </Link>
-        <Link href="/markets" className="bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl p-4 hover:scale-105 transition">
-          <h3 className="text-white font-bold">📊 Markets</h3>
-          <p className="text-white/60 text-xs mt-1">Prediction Trading</p>
-        </Link>
-        <Link href="/live-casino" className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl p-4 hover:scale-105 transition">
-          <h3 className="text-white font-bold">🎥 Live Casino</h3>
-          <p className="text-white/60 text-xs mt-1">Real Dealers</p>
-        </Link>
-        <Link href="/virtual" className="bg-gradient-to-br from-orange-600 to-red-600 rounded-2xl p-4 hover:scale-105 transition">
-          <h3 className="text-white font-bold">🐎 Virtuals</h3>
-          <p className="text-white/60 text-xs mt-1">Virtual Racing</p>
-        </Link>
-      </div>
+      {/* Trending predictions */}
+      {trending.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-xl font-bold text-white mb-4">🔥 Trending Predictions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {trending.map((m: any) => (
+              <div key={m.id} className="card-cinema p-5">
+                <span className="text-xs text-white/40 capitalize">{m.category}</span>
+                <h3 className="text-white font-bold mt-2">{m.question}</h3>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-neon-400 font-bold text-sm">YES {m.yesPrice}¢</span>
+                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-neon-400 rounded-full" style={{ width: `${m.yesPrice}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
