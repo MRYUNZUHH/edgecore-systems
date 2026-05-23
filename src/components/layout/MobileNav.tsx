@@ -1,14 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Gamepad2, TrendingUp, Tv, User } from "lucide-react";
 
 const links = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/casino", icon: Gamepad2, label: "Casino" },
-  { href: "/predictions", icon: TrendingUp, label: "Predict" },
-  { href: "/live-casino", icon: Tv, label: "Live" },
-  { href: "/auth/login", icon: User, label: "Account" },
+  { href: "/", label: "Home", emoji: "🏠" },
+  { href: "/casino", label: "Casino", emoji: "🎮" },
+  { href: "/predictions", label: "Predict", emoji: "📊" },
+  { href: "/live-casino", label: "Live", emoji: "🔴" },
+  { href: "/wallet", label: "Wallet", emoji: "💰" },
 ];
 
 export default function MobileNav() {
@@ -18,7 +17,7 @@ export default function MobileNav() {
       {links.map(link => (
         <Link key={link.href} href={link.href}
           className={`flex flex-col items-center text-[10px] gap-0.5 ${pathname === link.href ? 'text-[#f5c842]' : 'text-[#5a6a85]'}`}>
-          <link.icon className="w-5 h-5" /> {link.label}
+          <span className="text-lg">{link.emoji}</span> {link.label}
         </Link>
       ))}
     </nav>
