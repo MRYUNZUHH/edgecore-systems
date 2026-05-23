@@ -8,7 +8,8 @@ interface GameState {
   claimedPromos: string[]; selfExcluded: boolean; depositLimit: number;
   setBalance: (n: number) => void; adjustBalance: (delta: number) => void;
   setCurrency: (c: string) => void; setLang: (l: string) => void;
-  login: (name: string) => void; logout: () => void;
+  login: (name: string, password?: string) => { success: boolean; error?: string };
+  logout: () => void;
   addWager: (amount: number) => void; addBet: (bet: any) => void;
   addTransaction: (tx: any) => void; claimPromo: (id: string) => void;
   setSelfExcluded: (v: boolean) => void; setDepositLimit: (n: number) => void;
@@ -24,7 +25,16 @@ export const useStore = create<GameState>()(
       adjustBalance: (delta) => set(s => ({ balance: Math.max(0, s.balance + delta) })),
       setCurrency: (c) => set({ currency: c }),
       setLang: (l) => set({ lang: l }),
-      login: (name) => set({ user: { name, avatar: name.slice(0,2).toUpperCase(), role: name === 'admin' ? 'admin' : 'user' }, balance: 10000 }),
+      login: (name, password) => {
+        if (name.length < 3) return { success: false, error: "Username too short" }
+        const isAdmin = name === "admin" && password === "admin"
+        set({
+          user: { name, avatar: name.slice(0,2).toUpperCase(), role: isAdmin ? 'admin' : 'user' },
+          balance: 10000,
+          betHistory: [],
+        })
+        return { success: true }
+      },
       logout: () => set({ user: null, balance: 0 }),
       addWager: (amount) => set(s => ({ wagerTotal: s.wagerTotal + amount })),
       addBet: (bet) => set(s => ({ betHistory: [bet, ...s.betHistory].slice(0, 100) })),
