@@ -1,85 +1,98 @@
 "use client";
-'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { useStore } from '@/store/game-store';
-import { RuleModal } from '@/components/ui/RuleModal';
+import { useState, useEffect, useRef } from "react";
+import { useStore } from "@/store/game-store";
+import { formatMoney } from "@/lib/format";
+import confetti from "canvas-confetti";
 
-export function CrashGame() {
-  const { placeBet, balance } = useStore();
-  const [bet, setBet] = useState(100);
-  const [multiplier, setMultiplier] = useState(1.0);
-  const [status, setStatus] = useState<'idle'|'running'|'cashed'|'crashed'>('idle');
-  const [graph, setGraph] = useState<number[]>([1.0]);
-  const [showRules, setShowRules] = useState(false);
-  const crashRef = useRef(0);
-  const intervalRef = useRef<NodeJS.Timeout>(null);
+export default function CrashGame({ onClose }: { onClose: () => void }) {
+  const { balance, adjustBalance, placeBet, currency } = useStore()
+  const [phase, setPhase] = useState<'betting'|'flying'|'cashedout'|'crashed'>('betting')
+  const [multiplier, setMultiplier] = useState(1.0)
+  const [betAmount, setBetAmount] = useState(10)
+  const [crashPoint, setCrashPoint] = useState(0)
+  const [history, setHistory] = useState<number[]>([2.3,1.1,8.4,1.5,3.2,1.0,14.7])
+  const [countdown, setCountdown] = useState(5)
+  const intervalRef = useRef<NodeJS.Timeout>(null)
 
-  const start = useCallback(() => {
-    setStatus('running');
-    setMultiplier(1.0);
-    setGraph([1.0]);
-    crashRef.current = Math.random() < 0.94 ? 1.0 + Math.random()*0.3 : 2 + Math.random()*3;
-  }, []);
+  const startRound = () => {
+    if (betAmount > balance) return
+    const cp = parseFloat((Math.max(1.0, 0.99 / Math.random())).toFixed(2))
+    setCrashPoint(cp)
+    setMultiplier(1.0)
+    setPhase('flying')
+    adjustBalance(-betAmount)
+  }
+
+  const cashOut = () => {
+    if (phase !== 'flying') return
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    const win = betAmount * multiplier
+    adjustBalance(win)
+    setHistory(prev => [parseFloat(multiplier.toFixed(2)), ...prev].slice(0,10))
+    setPhase('cashedout')
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
+    setTimeout(() => { setPhase('betting'); setCountdown(5) }, 2500)
+  }
 
   useEffect(() => {
-    if (status !== 'running') return;
+    if (phase === 'betting' && countdown > 0) {
+      const timer = setInterval(() => setCountdown(prev => prev - 1), 1000)
+      return () => clearInterval(timer)
+    }
+    if (phase === 'betting' && countdown === 0 && betAmount > 0) {
+      startRound()
+    }
+  }, [phase, countdown])
+
+  useEffect(() => {
+    if (phase !== 'flying') return
     intervalRef.current = setInterval(() => {
       setMultiplier(prev => {
-        const next = prev + 0.01;
-        setGraph(g => [...g, next]);
-        if (next >= crashRef.current) {
-          clearInterval(intervalRef.current!);
-          setStatus('crashed');
-          placeBet('crash', bet);
-          return next;
+        const next = parseFloat((prev + (Math.random() * 0.06 + 0.01)).toFixed(2))
+        if (next >= crashPoint) {
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          setPhase('crashed')
+          setHistory(prev => [crashPoint, ...prev].slice(0,10))
+          setTimeout(() => { setPhase('betting'); setCountdown(5) }, 2500)
+          return crashPoint
         }
-        return next;
-      });
-    }, 100);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [status, bet]);
-
-  const cashout = () => {
-    if (status !== 'running') return;
-    clearInterval(intervalRef.current!);
-    setStatus('cashed');
-    placeBet('crash', bet);
-  };
+        return next
+      })
+    }, 100)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [phase, crashPoint])
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="glass-panel p-8 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-4xl font-black gold-text">🚀 Crash</h2>
-          <button onClick={() => setShowRules(true)} className="text-sm text-white/60 hover:text-white">How to Play</button>
-        </div>
-        <div className="h-48 bg-black/20 rounded-xl relative overflow-hidden mb-6">
-          <div className="absolute top-4 left-4 text-4xl font-bold text-white">{multiplier.toFixed(2)}x</div>
-          {/* Simple graph */}
-          <svg className="w-full h-full">
-            <polyline
-              fill="none"
-              stroke={status==='crashed'?'#ef4444':'#22c55e'}
-              strokeWidth="2"
-              points={graph.map((v,i)=>`${(i/graph.length)*100},${100-(v/Math.max(...graph,2))*100}`).join(' ')}
-            />
-          </svg>
-        </div>
-        <div className="space-y-4">
-          <div className="flex gap-2 justify-center">
-            {[10,50,100,500,1000].map(amt => (
-              <button key={amt} onClick={()=>setBet(amt)} className={`px-4 py-2 rounded-xl ${bet===amt?'btn-gold':'bg-white/10 text-white'}`}>${amt}</button>
-            ))}
-          </div>
-          {status==='idle' && <button onClick={start} className="btn-primary w-full py-4">Start</button>}
-          {status==='running' && <button onClick={cashout} className="btn-primary w-full py-4 bg-red-500">Cash Out ${(bet*multiplier).toFixed(0)}</button>}
-          {(status==='crashed'||status==='cashed') && <button onClick={start} className="btn-primary w-full py-4">Play Again</button>}
-        </div>
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f] flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-[#ffffff14]">
+        <h2 className="text-xl font-bold text-white">📈 Crash</h2>
+        <button onClick={onClose} className="text-white/40 hover:text-white text-2xl">&times;</button>
       </div>
-      <RuleModal isOpen={showRules} onClose={()=>setShowRules(false)} title="Crash Rules">
-        <p>Watch the multiplier rise and cash out before it crashes! The earlier you cash out, the safer. The house usually crashes early.</p>
-      </RuleModal>
+      <div className="flex-1 flex flex-col items-center justify-center relative p-4">
+        <p className={`text-6xl font-black mb-4 ${multiplier >= 2 ? 'text-green-400' : multiplier >= 1.5 ? 'text-yellow-400' : 'text-white'}`}>
+          {multiplier.toFixed(2)}x
+        </p>
+        <div className="flex gap-2 flex-wrap justify-center mb-8">
+          {history.map((h,i) => (
+            <span key={i} className={`px-3 py-1 rounded-lg text-xs font-bold ${h<2?'bg-red-500/20 text-red-400':h<5?'bg-yellow-500/20 text-yellow-400':'bg-green-500/20 text-green-400'}`}>{h}x</span>
+          ))}
+        </div>
+        {phase === 'betting' && <p className="text-white/40 text-lg">Next round in {countdown}s</p>}
+        {phase === 'crashed' && <p className="text-red-400 text-xl font-bold">Crashed at {crashPoint}x</p>}
+        {phase === 'cashedout' && <p className="text-green-400 text-xl font-bold">Cashed out! Won {formatMoney(betAmount * multiplier, currency)}</p>}
+      </div>
+      <div className="p-4 border-t border-[#ffffff14] space-y-3">
+        <div className="flex items-center gap-2">
+          <input type="number" value={betAmount} onChange={e => setBetAmount(Number(e.target.value))}
+            className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white" />
+          <span className="text-white/40 text-sm">{formatMoney(balance, currency)}</span>
+        </div>
+        <div className="flex gap-2">{[10,50,100,500].map(a => (
+          <button key={a} onClick={() => setBetAmount(a)} className="px-3 py-1 bg-white/5 rounded-lg text-white text-xs">{a}</button>
+        ))}</div>
+        {phase === 'betting' && <button onClick={startRound} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-xl">Place Bet</button>}
+        {phase === 'flying' && <button onClick={cashOut} className="w-full py-3 bg-green-500 text-black font-bold rounded-xl animate-pulse">Cash Out @ {multiplier.toFixed(2)}x</button>}
+      </div>
     </div>
   );
 }
