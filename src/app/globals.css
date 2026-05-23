@@ -1,105 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&family=Orbitron:wght@700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-black text-white antialiased;
-    font-family: var(--font-inter), sans-serif;
-    background: radial-gradient(ellipse at top, #0a0a1a 0%, #020008 100%);
-  }
+:root {
+  --bg-base: #080b12;
+  --bg-surface: #0f1520;
+  --bg-elevated: #161e2e;
+  --bg-input: #1a2235;
+  --bg-hover: #1f2940;
+  --gold: #f5c842;
+  --gold-dim: #c9a227;
+  --gold-glow: rgba(245, 200, 66, 0.25);
+  --gold-gradient: linear-gradient(135deg, #f5c842 0%, #e8a020 50%, #f5c842 100%);
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --text-primary: #e8edf5;
+  --text-muted: #5a6a85;
+  --text-faint: #2e3d54;
+  --border: rgba(255,255,255,0.06);
+  --border-gold: rgba(245,200,66,0.3);
 }
+
+body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter', sans-serif; }
+.font-display { font-family: 'Orbitron', monospace; }
+.font-heading { font-family: 'Rajdhani', sans-serif; }
+.font-body { font-family: 'Inter', sans-serif; }
 
 @layer components {
-  /* Cyber-luxury glass — NOT generic glassmorphism */
-  .cyber-glass {
-    @apply bg-gradient-to-br from-black/80 via-purple-950/40 to-black/80 backdrop-blur-2xl border border-purple-500/20;
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.08), 0 8px 32px rgba(0,0,0,0.6);
+  .card {
+    @apply bg-[#0f1520] border border-[#ffffff0f] rounded-xl transition-all duration-200;
   }
-  
-  /* Live pulse ring */
-  .live-ring {
-    @apply relative;
+  .card:hover {
+    border-color: var(--border-gold);
+    box-shadow: 0 0 24px var(--gold-glow), 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(-3px);
   }
-  .live-ring::before {
+  .btn-primary {
+    background: var(--gold-gradient);
+    @apply text-black font-heading font-bold text-sm tracking-wide rounded-lg py-3 px-7 relative overflow-hidden transition;
+  }
+  .btn-primary::after {
     content: '';
-    @apply absolute -inset-1 rounded-full opacity-75;
-    background: conic-gradient(from 0deg, #00ff88, #a855f7, #00ff88);
-    animation: ring-spin 3s linear infinite;
+    @apply absolute -top-1/2 -left-1/2 w-[200%] h-[200%];
+    background: linear-gradient(transparent, rgba(255,255,255,0.15), transparent);
+    transform: rotate(30deg) translateX(-100%);
+    transition: transform 0.5s;
   }
-  
-  /* Neon button — NOT generic */
-  .btn-neon {
-    @apply relative overflow-hidden bg-black text-neon-400 font-bold py-3 px-8 rounded-xl border border-neon-400/30;
-    box-shadow: 0 0 20px rgba(0,255,136,0.3), 0 0 40px rgba(0,255,136,0.1);
-    transition: all 0.3s;
+  .btn-primary:hover::after { transform: rotate(30deg) translateX(100%); }
+  .badge-live {
+    @apply bg-[#ef4444] text-white text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded;
+    animation: pulse-red 1.5s infinite;
   }
-  .btn-neon:hover {
-    @apply bg-neon-400 text-black;
-    box-shadow: 0 0 40px rgba(0,255,136,0.6), 0 0 80px rgba(0,255,136,0.2);
-    transform: translateY(-2px);
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { opacity: 0.85; box-shadow: 0 0 0 5px rgba(239,68,68,0); }
   }
-  
-  /* Cinematic card — asymmetrical depth */
-  .card-cinema {
-    @apply relative overflow-hidden rounded-2xl border border-white/5;
-    background: linear-gradient(135deg, rgba(10,10,30,0.95), rgba(5,5,20,0.9));
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  .input {
+    @apply bg-[#1a2235] border border-[#ffffff0f] rounded-lg text-[#e8edf5] px-4 py-3 text-sm w-full transition focus:border-[#f5c842] focus:shadow-[0_0_0_3px_rgba(245,200,66,0.25)] outline-none;
   }
-  .card-cinema:hover {
-    border-color: rgba(168,85,247,0.4);
-    box-shadow: 0 30px 80px rgba(168,85,247,0.15), 0 0 40px rgba(168,85,247,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
-    transform: translateY(-4px) scale(1.02);
-  }
-  
-  /* Gold text */
-  .gold-text {
-    @apply bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent;
-  }
-  
-  /* Neon text */
-  .neon-text {
-    @apply bg-gradient-to-r from-green-300 via-neon-400 to-emerald-400 bg-clip-text text-transparent;
-  }
-  
-  /* Purple glow text */
-  .purple-text {
-    @apply bg-gradient-to-r from-purple-300 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent;
-  }
-
-  /* Hide scrollbar */
-  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
 }
 
-@keyframes ring-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-20px) rotate(3deg); }
-  66% { transform: translateY(-10px) rotate(-2deg); }
-}
-
-@keyframes pulse-neon {
-  0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.3); }
-  50% { box-shadow: 0 0 60px rgba(0,255,136,0.7), 0 0 120px rgba(0,255,136,0.2); }
-}
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes cinematic-reveal {
-  from { opacity: 0; transform: perspective(500px) rotateX(2deg) translateY(30px); }
-  to { opacity: 1; transform: perspective(500px) rotateX(0) translateY(0); }
-}
-
-.animate-float { animation: float 6s ease-in-out infinite; }
-.animate-pulse-neon { animation: pulse-neon 2s ease-in-out infinite; }
-.animate-slide-up { animation: slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.animate-cinematic { animation: cinematic-reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(245,200,66,0.3); border-radius: 4px; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }

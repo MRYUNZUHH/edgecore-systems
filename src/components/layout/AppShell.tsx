@@ -1,19 +1,15 @@
 "use client";
 import Sidebar from "./Sidebar";
-import TopNav from "./TopNav";
 import MobileNav from "./MobileNav";
-import RightPanel from "./RightPanel";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNav />
-        <main className="flex-1 overflow-y-auto bg-navy-900 p-4 pb-20 lg:pb-4">{children}</main>
+      <div className="flex-1 lg:ml-60">
+        <main className="p-4 lg:p-6 pb-20 lg:pb-6">{children}</main>
         <MobileNav />
       </div>
-      <RightPanel />
     </div>
   );
 }
