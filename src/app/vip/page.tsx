@@ -1,5 +1,5 @@
 "use client";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 
 const tiers = [
   { name: "Bronze", min: 0, color: "from-amber-700 to-amber-600", emoji: "🥉" },
@@ -10,7 +10,7 @@ const tiers = [
 ];
 
 export default function VIPPage() {
-  const { user, balance } = useGameStore();
+  const { user, balance } = useStore();
   const currentTier = user?.vipLevel || 0;
   const nextTier = tiers[Math.min(currentTier + 1, 4)];
 

@@ -1,11 +1,11 @@
 "use client";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function TopNav() {
-  const { user, wallet, logout } = useGameStore();
+  const { user, wallet, logout } = useStore();
   const [jackpot, setJackpot] = useState(34200);
   const balance = wallet?.cashBalance ?? 0;
 

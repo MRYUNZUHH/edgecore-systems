@@ -2,11 +2,11 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 export function CrashGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [bet, setBet] = useState(100);
   const [multiplier, setMultiplier] = useState(1.0);
   const [status, setStatus] = useState<'idle'|'running'|'cashed'|'crashed'>('idle');

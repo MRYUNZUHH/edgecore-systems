@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 const suits = ['♠','♥','♦','♣'];
@@ -21,7 +21,7 @@ function handValue(hand: any[]) {
 }
 
 export function BlackjackGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [bet, setBet] = useState(100);
   const [deck, setDeck] = useState(createDeck());
   const [player, setPlayer] = useState<any[]>([]);

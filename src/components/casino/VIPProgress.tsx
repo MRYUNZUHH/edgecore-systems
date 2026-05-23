@@ -1,7 +1,7 @@
 "use client";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 export default function VIPProgress() {
-  const { balance } = useGameStore();
+  const { balance } = useStore();
   const progress = Math.min(100, (balance / 50000) * 100);
   return (
     <div className="glass-card rounded-xl p-4">

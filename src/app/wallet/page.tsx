@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import PaymentMethods from "@/components/wallet/PaymentMethods";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX } from "react-icons/fi";
 
 export default function WalletPage() {
-  const { balance, currency, deposit, withdraw } = useGameStore();
+  const { balance, currency, deposit, withdraw } = useStore();
   const [showModal, setShowModal] = useState<"deposit" | "withdraw" | null>(null);
   const [amount, setAmount] = useState(100);
   const [method, setMethod] = useState("M-Pesa");

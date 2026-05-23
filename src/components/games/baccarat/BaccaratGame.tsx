@@ -2,10 +2,10 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 
 export function BaccaratGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [betAmount, setBetAmount] = useState(100);
   const [betOn, setBetOn] = useState<'player' | 'banker' | 'tie'>('player');
   const [playerCards, setPlayerCards] = useState<number[]>([]);

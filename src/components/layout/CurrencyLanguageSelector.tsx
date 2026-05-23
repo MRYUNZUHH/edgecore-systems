@@ -1,5 +1,5 @@
 "use client";
-import { useGameStore, Currency, Language } from "@/store/game-store";
+import { useStore, Currency, Language } from "@/store/game-store";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,7 +22,7 @@ const languages: { code: Language; label: string; flag: string }[] = [
 ];
 
 export default function CurrencyLanguageSelector() {
-  const { currency, setCurrency, language, setLanguage } = useGameStore();
+  const { currency, setCurrency, language, setLanguage } = useStore();
   const [showCurrency, setShowCurrency] = useState(false);
   const [showLang, setShowLang] = useState(false);
 

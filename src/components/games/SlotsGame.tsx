@@ -2,13 +2,13 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 const symbols = ['🍒','🍋','🔔','💎','7️⃣'];
 
 export function SlotsGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [bet, setBet] = useState(100);
   const [reels, setReels] = useState([0,1,2]);
   const [spinning, setSpinning] = useState(false);

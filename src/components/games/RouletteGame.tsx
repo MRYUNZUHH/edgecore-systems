@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 const numbers = [
@@ -10,7 +10,7 @@ const numbers = [
 ];
 
 export function RouletteGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [betAmount, setBetAmount] = useState(100);
   const [result, setResult] = useState<string | null>(null);
   const [spinning, setSpinning] = useState(false);

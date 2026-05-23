@@ -2,12 +2,12 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 
 const emojis = ['😎','🤑','🤠','👾','🦊','🐼','🐨','🦄','😈','👽'];
 
 export function ProfilePage() {
-  const { user, balance, betHistory, setAvatar } = useGameStore();
+  const { user, balance, betHistory, setAvatar } = useStore();
   const [selected, setSelected] = useState(user?.avatar || '😎');
 
   return (

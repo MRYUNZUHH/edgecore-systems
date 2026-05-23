@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { motion } from "framer-motion";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
@@ -16,7 +16,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const signup = useGameStore(s => s.signup);
+  const signup = useStore(s => s.signup);
   const router = useRouter();
 
   const handleSignup = () => {

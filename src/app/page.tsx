@@ -1,5 +1,5 @@
 "use client";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { useRouter } from "next/navigation";
 import CyberHero from "@/components/cyber/CyberHero";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ const categories = [
 ];
 
 export default function Home() {
-  const { isLoggedIn } = useGameStore();
+  const { isLoggedIn } = useStore();
   const router = useRouter();
   const [trending, setTrending] = useState<any[]>([]);
 

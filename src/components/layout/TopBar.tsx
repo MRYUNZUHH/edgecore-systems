@@ -1,10 +1,10 @@
 "use client";
 'use client';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 
 export default function TopBar() {
-  const { balance, user, sidebarCollapsed } = useGameStore();
+  const { balance, user, sidebarCollapsed } = useStore();
 
   return (
     <header

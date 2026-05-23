@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { FiUser, FiLock, FiX } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 
@@ -15,7 +15,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, demoLogin } = useGameStore();
+  const { login, demoLogin } = useStore();
 
   const handleSubmit = () => {
     if (username.length < 3) { setError("Username too short"); return; }

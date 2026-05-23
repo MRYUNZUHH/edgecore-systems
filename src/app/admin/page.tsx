@@ -1,8 +1,8 @@
 "use client";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { useRouter } from "next/navigation";
 export default function AdminPage() {
-  const { user } = useGameStore();
+  const { user } = useStore();
   const router = useRouter();
   if (!user || user.role !== "admin") { router.push("/"); return null; }
   return (

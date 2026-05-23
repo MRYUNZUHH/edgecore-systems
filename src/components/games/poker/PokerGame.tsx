@@ -2,13 +2,13 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 
 const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const suits = ['♠','♥','♦','♣'];
 
 export function PokerGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [betAmount, setBetAmount] = useState(100);
   const [playerHand, setPlayerHand] = useState<string[]>([]);
   const [aiHand, setAiHand] = useState<string[]>([]);

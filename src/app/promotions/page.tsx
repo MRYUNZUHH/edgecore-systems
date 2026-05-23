@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX } from "react-icons/fi";
 
@@ -12,7 +12,7 @@ const promos = [
 ];
 
 export default function PromotionsPage() {
-  const { balance, deposit } = useGameStore();
+  const { balance, deposit } = useStore();
   const [claimed, setClaimed] = useState<number | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 

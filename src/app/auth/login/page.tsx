@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 import { motion } from "framer-motion";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [jackpot, setJackpot] = useState(34200);
-  const login = useGameStore(s => s.login);
+  const login = useStore(s => s.login);
   const router = useRouter();
 
   useEffect(() => {

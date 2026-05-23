@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 const diceFaces: Record<number, string> = {
@@ -10,7 +10,7 @@ const diceFaces: Record<number, string> = {
 };
 
 export function DiceGame() {
-  const { placeBet, balance } = useGameStore();
+  const { placeBet, balance } = useStore();
   const [bet, setBet] = useState(100);
   const [target, setTarget] = useState(50);
   const [result, setResult] = useState<number | null>(null);

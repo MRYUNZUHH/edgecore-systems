@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Gamepad2, Tv, TrendingUp, Gift, Shield, Wallet, BarChart3, Heart, Users, Sparkles } from "lucide-react";
-import { useGameStore } from "@/store/game-store";
+import { useStore } from "@/store/game-store";
 
 const mainLinks = [
   { href: "/", label: "Home", icon: Sparkles },
@@ -25,7 +25,7 @@ const utilityLinks = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useGameStore();
+  const { user } = useStore();
   const isAdmin = user?.role === "admin";
   const username = user?.username || "Guest";
 

@@ -1,10 +1,10 @@
 "use client";
 'use client';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function OperatorDashboard() {
-  const { betHistory, balance } = useGameStore();
+  const { betHistory, balance } = useStore();
   const totalProfit = balance.totalWagered - balance.totalPayout;
   const profitData = betHistory.slice().reverse().reduce((acc: any[], bet, i) => {
     acc.push({ bet: i + 1, profit: (acc[i-1]?.profit || 0) + bet.profit });

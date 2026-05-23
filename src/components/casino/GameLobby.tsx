@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useGameStore } from '@/store/game-store';
+import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
 const fakeNames = ['CryptoKing','LuckyDice','SpinMaster','AceHigh','BetBlaze','DiamondHands','LuckyCharm','JackpotJill','CardShark'];
@@ -18,7 +18,7 @@ const allGames = [
 ];
 
 export function GameLobby() {
-  const { setCurrentGame, user } = useGameStore();
+  const { setCurrentGame, user } = useStore();
   const [bets, setBets] = useState<any[]>([]);
   const [showRulesGame, setShowRulesGame] = useState<string | null>(null);
 
