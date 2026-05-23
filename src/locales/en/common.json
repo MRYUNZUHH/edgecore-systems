@@ -1,0 +1,8 @@
+{
+  "nav": { "home": "Home", "casino": "Casino", "live": "Live Casino", "predictions": "Predictions", "virtual": "Virtual", "vip": "VIP Club", "promotions": "Promotions", "wallet": "Wallet", "responsible": "Responsible Play" },
+  "hero": { "title": "Premium Casino Experience", "subtitle": "Play your favorite games with zero risk.", "cta": "Claim 5,000 Demo Credits", "jackpot": "Live Jackpot" },
+  "auth": { "login": "Sign In", "register": "Create Account", "username": "Username", "password": "Password", "demoLogin": "Demo Login (Instant Play)", "googleLogin": "Continue with Google" },
+  "wallet": { "title": "Wallet", "balance": "Balance", "deposit": "Deposit", "withdraw": "Withdraw", "history": "Transaction History" },
+  "vip": { "title": "VIP Club", "tiers": ["Bronze", "Silver", "Gold", "Platinum", "Diamond"] },
+  "footer": { "terms": "Terms & Conditions", "privacy": "Privacy Policy", "responsible": "Responsible Gaming", "contact": "Contact Us", "license": "Licensed under Curaçao eGaming # 8048/JAZ", "rng": "RNG Certified", "age": "18+ Only" }
+}
