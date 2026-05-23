@@ -2,46 +2,58 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface GameState {
-  balance: number; currency: string; lang: string;
-  user: { name: string; avatar: string; role: string } | null;
-  wagerTotal: number; betHistory: any[]; transactions: any[];
-  claimedPromos: string[]; selfExcluded: boolean; depositLimit: number;
-  setBalance: (n: number) => void; adjustBalance: (delta: number) => void;
-  setCurrency: (c: string) => void; setLang: (l: string) => void;
-  login: (name: string, password?: string) => { success: boolean; error?: string };
-  logout: () => void;
-  addWager: (amount: number) => void; addBet: (bet: any) => void;
-  addTransaction: (tx: any) => void; claimPromo: (id: string) => void;
-  setSelfExcluded: (v: boolean) => void; setDepositLimit: (n: number) => void;
+  isLoggedIn: boolean
+  balance: number
+  currency: string
+  user: { name: string; avatar: string; role: string; vipLevel: number } | null
+  login: (name: string, password?: string) => { success: boolean; error?: string }
+  demoLogin: () => void
+  logout: () => void
+  adjustBalance: (delta: number) => void
+  addBet: (bet: any) => void
+  betHistory: any[]
 }
 
 export const useStore = create<GameState>()(
   persist(
     (set, get) => ({
-      balance: 10000, currency: 'USD', lang: 'en',
-      user: null, wagerTotal: 0, betHistory: [], transactions: [],
-      claimedPromos: [], selfExcluded: false, depositLimit: 5000,
-      setBalance: (n) => set({ balance: n }),
-      adjustBalance: (delta) => set(s => ({ balance: Math.max(0, s.balance + delta) })),
-      setCurrency: (c) => set({ currency: c }),
-      setLang: (l) => set({ lang: l }),
+      isLoggedIn: false,
+      balance: 10000,
+      currency: 'USD',
+      user: null,
+      betHistory: [],
+      
       login: (name, password) => {
-        if (name.length < 3) return { success: false, error: "Username too short" }
+        if (!name || name.length < 2) return { success: false, error: "Username too short" }
         const isAdmin = name === "admin" && password === "admin"
         set({
-          user: { name, avatar: name.slice(0,2).toUpperCase(), role: isAdmin ? 'admin' : 'user' },
-          balance: 10000,
+          isLoggedIn: true,
+          user: { name, avatar: name.slice(0,2).toUpperCase(), role: isAdmin ? 'admin' : 'user', vipLevel: isAdmin ? 5 : 0 },
+          balance: isAdmin ? 50000 : 10000,
           betHistory: [],
         })
         return { success: true }
       },
-      logout: () => set({ user: null, balance: 0 }),
-      addWager: (amount) => set(s => ({ wagerTotal: s.wagerTotal + amount })),
+      
+      demoLogin: () => {
+        set({
+          isLoggedIn: true,
+          user: { name: "Demo Player", avatar: "DP", role: "user", vipLevel: 0 },
+          balance: 10000,
+          betHistory: [],
+        })
+      },
+      
+      logout: () => set({
+        isLoggedIn: false,
+        user: null,
+        balance: 10000,
+        betHistory: [],
+      }),
+      
+      adjustBalance: (delta) => set(s => ({ balance: Math.max(0, s.balance + delta) })),
+      
       addBet: (bet) => set(s => ({ betHistory: [bet, ...s.betHistory].slice(0, 100) })),
-      addTransaction: (tx) => set(s => ({ transactions: [tx, ...s.transactions].slice(0, 50) })),
-      claimPromo: (id) => set(s => ({ claimedPromos: [...s.claimedPromos, id] })),
-      setSelfExcluded: (v) => set({ selfExcluded: v }),
-      setDepositLimit: (n) => set({ depositLimit: n }),
     }),
     { name: 'edgecore-store' }
   )
