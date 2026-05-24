@@ -1,3 +1,1 @@
-export default function TermsPage() {
-  return <div className="max-w-4xl mx-auto py-8"><h1 className="text-3xl font-bold text-[#f5c842] mb-4">Terms & Conditions</h1><p className="text-[#5a6a85]">Demo platform. No real money. 18+ only.</p></div>;
-}
+export default function TermsPage() { return <div className="max-w-4xl mx-auto py-8"><h1 className="text-3xl font-bold text-[#f5c842] mb-4">Terms & Conditions</h1><p className="text-[#5a6a85]">Demo platform. No real money. 18+ only.</p></div>; }
