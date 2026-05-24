@@ -1,1 +1,3 @@
-export default function ResponsibleGamingPage() { return <div className="max-w-4xl mx-auto space-y-6"><h1 className="text-3xl font-bold text-[#f5c842]">🛡️ Responsible Gaming</h1><div className="bg-[#0f1520] border border-[#ffffff0f] rounded-2xl p-6 space-y-4"><p className="text-white/80">Demo platform. No real money.</p></div></div>; }
+export default function ResponsibleGamingPage() {
+  return <div className="space-y-6"><h1 className="text-3xl font-bold text-yellow-500">🛡️ Responsible Gaming</h1><div className="bg-gray-900 border border-gray-800 rounded-2xl p-6"><p className="text-gray-300">This is a demo platform. No real money is used.</p></div></div>;
+}

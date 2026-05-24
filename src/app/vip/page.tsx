@@ -1,4 +1,12 @@
 export default function VIPPage() {
-  const tiers = [{name:"Bronze",emoji:"🥉"},{name:"Silver",emoji:"🥈"},{name:"Gold",emoji:"🥇"},{name:"Platinum",emoji:"💎"},{name:"Diamond",emoji:"👑"}];
-  return <div className="max-w-4xl mx-auto space-y-6"><h1 className="text-3xl font-bold text-[#f5c842]">👑 VIP Club</h1><div className="bg-[#0f1520] border border-[#ffffff0f] rounded-2xl p-6 text-center"><p className="text-6xl">{tiers[0].emoji}</p><h2 className="text-2xl font-bold text-white mt-3">Bronze Tier</h2><p className="text-[#5a6a85]">Login to track your progress</p></div><div className="grid grid-cols-5 gap-3">{tiers.map(t=><div key={t.name} className="text-center p-4 rounded-xl border border-white/5 bg-white/5"><span className="text-2xl">{t.emoji}</span><p className="text-xs text-white font-bold mt-1">{t.name}</p></div>)}</div></div>;
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-yellow-500">👑 VIP Club</h1>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 text-center">
+        <p className="text-6xl">🥉</p>
+        <h2 className="text-2xl font-bold text-white mt-3">Bronze Tier</h2>
+        <p className="text-gray-500">Login to track your progress</p>
+      </div>
+    </div>
+  );
 }
