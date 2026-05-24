@@ -1,12 +1,1 @@
-export default function VirtualPage() {
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#f5c842]">🐎 Virtual Sports</h1>
-      <div className="bg-[#0f1520] border border-[#ffffff0f] rounded-2xl p-8 text-center">
-        <p className="text-6xl mb-4">🏇</p>
-        <p className="text-white text-xl font-bold">Virtual Racing</p>
-        <p className="text-[#5a6a85] mt-2">Football, horse racing, and greyhounds — coming soon</p>
-      </div>
-    </div>
-  );
-}
+export default function VirtualPage() { return <div className="space-y-6"><h1 className="text-3xl font-bold text-[#f5c842]">🐎 Virtual Sports</h1><div className="bg-[#0f1520] border border-[#ffffff0f] rounded-2xl p-8 text-center"><p className="text-6xl mb-4">🏇</p><p className="text-white text-xl font-bold">Virtual Racing</p><p className="text-[#5a6a85] mt-2">Coming soon</p></div></div>; }

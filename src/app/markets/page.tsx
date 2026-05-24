@@ -1,1 +1,1 @@
-"use client"; export default function MarketsPage() { return <div className="max-w-7xl mx-auto p-8 text-white"><h1 className="text-3xl font-heading font-bold text-[#f5c842]">📊 Prediction Markets</h1><p className="text-[#5a6a85] mt-4">Live markets coming soon.</p></div>; }
+export default function MarketsPage() { return <div className="max-w-7xl mx-auto py-8"><h1 className="text-3xl font-bold text-[#f5c842]">📊 Prediction Markets</h1><p className="text-[#5a6a85] mt-4">Coming soon.</p></div>; }

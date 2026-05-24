@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&family=Orbitron:wght@700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,60 +5,26 @@
 :root {
   --bg-base: #080b12;
   --bg-surface: #0f1520;
-  --bg-elevated: #161e2e;
-  --bg-input: #1a2235;
-  --bg-hover: #1f2940;
   --gold: #f5c842;
-  --gold-dim: #c9a227;
-  --gold-glow: rgba(245, 200, 66, 0.25);
-  --gold-gradient: linear-gradient(135deg, #f5c842 0%, #e8a020 50%, #f5c842 100%);
   --green: #22c55e;
   --red: #ef4444;
-  --blue: #3b82f6;
-  --purple: #8b5cf6;
-  --text-primary: #e8edf5;
-  --text-muted: #5a6a85;
-  --text-faint: #2e3d54;
-  --border: rgba(255,255,255,0.06);
-  --border-gold: rgba(245,200,66,0.3);
 }
 
-body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter', sans-serif; }
-.font-display { font-family: 'Orbitron', monospace; }
-.font-heading { font-family: 'Rajdhani', sans-serif; }
-.font-body { font-family: 'Inter', sans-serif; }
+body {
+  background: #080b12;
+  color: #e8edf5;
+  font-family: 'Inter', sans-serif;
+}
 
 @layer components {
   .card {
-    @apply bg-[#0f1520] border border-[#ffffff0f] rounded-xl transition-all duration-200;
-  }
-  .card:hover {
-    border-color: var(--border-gold);
-    box-shadow: 0 0 24px var(--gold-glow), 0 8px 32px rgba(0,0,0,0.4);
-    transform: translateY(-3px);
+    @apply bg-[#0f1520] border border-[#ffffff0f] rounded-xl;
   }
   .btn-primary {
-    background: var(--gold-gradient);
-    @apply text-black font-heading font-bold text-sm tracking-wide rounded-lg py-3 px-7 relative overflow-hidden transition;
-  }
-  .btn-primary::after {
-    content: '';
-    @apply absolute -top-1/2 -left-1/2 w-[200%] h-[200%];
-    background: linear-gradient(transparent, rgba(255,255,255,0.15), transparent);
-    transform: rotate(30deg) translateX(-100%);
-    transition: transform 0.5s;
-  }
-  .btn-primary:hover::after { transform: rotate(30deg) translateX(100%); }
-  .badge-live {
-    @apply bg-[#ef4444] text-white text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded;
-    animation: pulse-red 1.5s infinite;
-  }
-  @keyframes pulse-red {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
-    50% { opacity: 0.85; box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+    @apply bg-[#f5c842] text-black font-bold rounded-lg py-3 px-6;
   }
   .input {
-    @apply bg-[#1a2235] border border-[#ffffff0f] rounded-lg text-[#e8edf5] px-4 py-3 text-sm w-full transition focus:border-[#f5c842] focus:shadow-[0_0_0_3px_rgba(245,200,66,0.25)] outline-none;
+    @apply bg-[#1a2235] border border-[#ffffff0f] rounded-lg text-white px-4 py-3 w-full;
   }
 }
 
