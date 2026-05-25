@@ -13,7 +13,11 @@ export default function GameShell({ title, rtp, children, history }: Props) {
   const [balance, setBalance] = useState(10000);
 
   useEffect(() => {
-    const update = () => setBalance(parseFloat(localStorage.getItem("ec_balance") || "10000"));
+    const update = () => {
+      const mode = localStorage.getItem("ec_mode") || "demo";
+      const key = mode === "real" ? "ec_real_balance" : "ec_balance";
+      setBalance(parseFloat(localStorage.getItem(key) || (mode === "real" ? "0" : "10000")));
+    };
     update();
     const interval = setInterval(update, 500);
     window.addEventListener("storage", update);
