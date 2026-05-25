@@ -5,9 +5,9 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 
 export default function Navbar() {
-  const { user, isLoggedIn, switchMode, getBalance, resetDemo, logout } = useAuth();
+  const { user, isLoggedIn, mounted, switchMode, getBalance, resetDemo, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
-  const balance = getBalance();
+  const balance = mounted ? getBalance() : 0;
   const mode = user?.accountMode || "demo";
 
   return (
@@ -25,7 +25,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          {isLoggedIn ? (
+          {mounted && isLoggedIn ? (
             <>
               {/* Demo/Real Toggle */}
               <div className="hidden sm:flex bg-[var(--card)] border border-[var(--border)] rounded-full p-0.5 gap-0.5">
@@ -51,7 +51,7 @@ export default function Navbar() {
               <div className="relative">
                 <button onClick={() => setShowDropdown(!showDropdown)}
                   className="w-9 h-9 rounded-full bg-[var(--bg3)] border border-[var(--border)] flex items-center justify-center text-xl hover:border-gold transition">
-                  {user?.avatar}
+                  {user?.avatar || "😎"}
                 </button>
                 {showDropdown && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl z-50 overflow-hidden">
@@ -66,12 +66,12 @@ export default function Navbar() {
                 )}
               </div>
             </>
-          ) : (
+          ) : mounted ? (
             <>
               <Link href="/auth/login" className="btn-gold text-sm px-5 py-2 no-underline">Sign In</Link>
               <Link href="/auth/signup" className="border border-[var(--gold)]/30 text-gold font-bold px-5 py-2 rounded-lg text-sm no-underline hover:bg-[var(--gold)]/10 transition hidden sm:block">Register</Link>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
