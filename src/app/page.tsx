@@ -6,18 +6,16 @@ import MobileNav from "@/components/layout/MobileNav";
 import LiveTicker from "@/components/ui/LiveTicker";
 import { ToastContainer } from "@/components/ui/Toast";
 
-const categories = ["All","Crash","Slots","Table","Live","Sports"];
+const categories = ["All","Crash","Slots","Table","Live"];
 const games = [
-  {id:"aviator",n:"Aviator",e:"✈️",c:"Crash",bg:"from-purple-900 to-fuchsia-900",p:12847,b:"HOT",r:97},
-  {id:"crash",n:"Crash X",e:"📈",c:"Crash",bg:"from-green-900 to-emerald-900",p:8942,b:"HOT",r:97},
-  {id:"mines",n:"Mines",e:"💣",c:"Crash",bg:"from-amber-900 to-orange-900",p:4521,b:null,r:95},
-  {id:"plinko",n:"Plinko",e:"🟡",c:"Crash",bg:"from-indigo-900 to-purple-900",p:3210,b:"NEW",r:96.5},
-  {id:"blackjack",n:"Blackjack",e:"🃏",c:"Table",bg:"from-blue-900 to-indigo-900",p:6234,b:null,r:99.5},
-  {id:"roulette",n:"Roulette",e:"🎡",c:"Table",bg:"from-red-900 to-rose-900",p:7890,b:"LIVE",r:97.3},
-  {id:"baccarat",n:"Baccarat",e:"🎴",c:"Table",bg:"from-cyan-900 to-teal-900",p:2341,b:null,r:98.9},
-  {id:"dragon",n:"Dragon Tiger",e:"🐉",c:"Table",bg:"from-orange-900 to-red-900",p:1567,b:null,r:96.9},
-  {id:"starburst",n:"Starburst",e:"⭐",c:"Slots",bg:"from-pink-900 to-rose-900",p:10234,b:"HOT",r:96.1},
-  {id:"book",n:"Book of Dead",e:"📖",c:"Slots",bg:"from-yellow-900 to-amber-900",p:5678,b:null,r:94.2},
+  {id:"aviator",n:"Aviator",e:"✈️",c:"Crash",bg:"from-purple-900 to-fuchsia-900",p:12847,b:"HOT",r:97,link:"/casino/aviator"},
+  {id:"crash",n:"Crash X",e:"📈",c:"Crash",bg:"from-green-900 to-emerald-900",p:8942,b:"HOT",r:97,link:"/casino/crash"},
+  {id:"mines",n:"Mines",e:"💣",c:"Crash",bg:"from-amber-900 to-orange-900",p:4521,b:null,r:95,link:"/casino/mines"},
+  {id:"dice",n:"Dice",e:"🎲",c:"Crash",bg:"from-cyan-900 to-blue-900",p:3210,b:"NEW",r:96,link:"/casino/dice"},
+  {id:"blackjack",n:"Blackjack",e:"🃏",c:"Table",bg:"from-blue-900 to-indigo-900",p:6234,b:null,r:99.5,link:"/casino/blackjack"},
+  {id:"roulette",n:"Roulette",e:"🎡",c:"Table",bg:"from-red-900 to-rose-900",p:7890,b:"LIVE",r:97.3,link:"/casino/roulette"},
+  {id:"starburst",n:"Starburst",e:"⭐",c:"Slots",bg:"from-pink-900 to-rose-900",p:10234,b:"HOT",r:96.1,link:"/casino"},
+  {id:"book",n:"Book of Dead",e:"📖",c:"Slots",bg:"from-yellow-900 to-amber-900",p:5678,b:null,r:94.2,link:"/casino"},
 ];
 
 const liveGames = [
@@ -44,7 +42,7 @@ export default function Home() {
     const jp = setInterval(() => setJackpot(p => p + Math.floor(Math.random()*100)+50), 2000);
     const genWins = () => {
       const names = ["K***a","M***i","J***n","L***a","C***s","A***a"];
-      const gms = ["Aviator","Crash","Mines","Blackjack","Roulette","Plinko"];
+      const gms = ["Aviator","Crash","Mines","Blackjack","Roulette","Dice"];
       return Array.from({length:8}, (_,i)=>({id:Date.now()+i, player:names[Math.floor(Math.random()*6)], game:gms[Math.floor(Math.random()*6)], bet:Math.floor(Math.random()*200)+10, mult:(Math.random()*10+1).toFixed(2), profit:Math.floor(Math.random()*2000)+50}));
     };
     setWins(genWins());
@@ -77,20 +75,20 @@ export default function Home() {
               <Link href="/casino" className="border border-[var(--gold)]/30 text-gold font-bold px-8 py-4 rounded-lg text-lg no-underline hover:bg-[var(--gold)]/10 transition">Browse Games</Link>
             </div>
             <div className="flex gap-6 text-sm text-muted flex-wrap">
-              <span>💰 $2.8M Paid Today</span><span>🏆 12,847 Winners</span><span>🎮 200+ Games</span><span>⚡ Instant Payouts</span>
+              <span>💰 $2.8M Paid Today</span><span>🏆 12,847 Winners</span><span>🎮 6 Games</span><span>⚡ Instant Payouts</span>
             </div>
           </div>
           <div className="card p-8 text-center">
             <p className="text-sm text-muted mb-2">🔥 LIVE JACKPOT</p>
             <p className="font-heading text-5xl font-bold text-gold transition-all">${jackpot.toLocaleString()}</p>
             <p className="text-xs text-muted mt-2">Auto-incrementing · Play to win</p>
-            <Link href="/casino" className="btn-gold w-full mt-6 py-3 no-underline">Play Now →</Link>
+            <Link href="/casino/crash" className="btn-gold w-full mt-6 py-3 no-underline">Play Crash Now →</Link>
           </div>
         </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        {[{l:"Online Now",v:"47,231",c:"text-green-400"},{l:"Paid Today",v:"$2.8M",c:"text-gold"},{l:"Games",v:"200+",c:"text-blue-400"},{l:"Support",v:"24/7",c:"text-purple-400"}].map(s=><div key={s.l} className="card p-5 text-center"><p className={`text-2xl font-heading font-bold ${s.c}`}>{s.v}</p><p className="text-xs text-muted mt-1">{s.l}</p></div>)}
+        {[{l:"Online Now",v:"47,231",c:"text-green-400"},{l:"Paid Today",v:"$2.8M",c:"text-gold"},{l:"Games",v:"6",c:"text-blue-400"},{l:"Support",v:"24/7",c:"text-purple-400"}].map(s=><div key={s.l} className="card p-5 text-center"><p className={`text-2xl font-heading font-bold ${s.c}`}>{s.v}</p><p className="text-xs text-muted mt-1">{s.l}</p></div>)}
       </section>
 
       <section className="max-w-7xl mx-auto px-4 mb-10">
@@ -98,12 +96,12 @@ export default function Home() {
         <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
           {categories.map(c=><button key={c} onClick={()=>setActiveCat(c)} className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition ${activeCat===c?'bg-gold text-black':'bg-[var(--card)] text-muted border border-[var(--border)] hover:border-gold'}`}>{c}</button>)}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {filtered.map(g=><div key={g.id} className={`card card-hover p-4 cursor-pointer relative overflow-hidden bg-gradient-to-br ${g.bg}`}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filtered.map(g=><Link key={g.id} href={g.link||"/casino"} className={`card card-hover p-4 cursor-pointer relative overflow-hidden no-underline bg-gradient-to-br ${g.bg}`}>
             {g.b&&<span className={`absolute top-2 right-2 ${g.b==='HOT'?'badge-hot':g.b==='LIVE'?'badge-live':'badge-new'}`}>{g.b}</span>}
             <div className="text-4xl mb-3">{g.e}</div><h3 className="text-white font-heading font-bold text-lg">{g.n}</h3>
             <p className="text-white/50 text-xs mt-1">{g.p.toLocaleString()} playing · RTP {g.r}%</p>
-          </div>)}
+          </Link>)}
         </div>
       </section>
 
