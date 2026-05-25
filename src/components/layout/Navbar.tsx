@@ -3,16 +3,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 
-const AVATARS = ["🦊","🐼","🐨","🦄","😎","🤠","👾","🐸","🤑","👑"];
-
 export default function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const [username, setUsername] = useState("");
   const [demoBalance, setDemoBalance] = useState(10000);
   const [realBalance, setRealBalance] = useState(0);
   const [accountMode, setAccountMode] = useState<"demo"|"real">("demo");
   const [avatar, setAvatar] = useState("😎");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -50,17 +48,26 @@ export default function Navbar() {
     setDemoBalance(10000);
     setRealBalance(0);
     setAccountMode("demo");
-    setAvatar("😎");
     setShowDropdown(false);
   };
 
   const isLoggedIn = mounted && !!username;
   const activeBalance = accountMode === "demo" ? demoBalance : realBalance;
 
+  // Show nothing until mounted to prevent SSR mismatch
+  if (!mounted) {
+    return (
+      <header className="border-b border-[#ffffff0f] bg-[#080b12]/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center">
+          <Logo size="sm" />
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="border-b border-[#ffffff0f] bg-[#080b12]/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Left: Logo + Nav */}
         <div className="flex items-center gap-6">
           <Logo size="sm" />
           <nav className="hidden lg:flex items-center gap-5 text-sm">
@@ -72,12 +79,9 @@ export default function Navbar() {
             <Link href="/wallet" className="text-gray-400 hover:text-white no-underline transition">Wallet</Link>
           </nav>
         </div>
-
-        {/* Right: Demo/Real + Balance + Avatar */}
         <div className="flex items-center gap-3">
-          {mounted && isLoggedIn ? (
+          {isLoggedIn ? (
             <>
-              {/* Demo/Real Toggle */}
               <div className="hidden sm:flex bg-[#0f1520] border border-[#ffffff0f] rounded-full p-0.5 gap-0.5">
                 <button onClick={() => switchMode("demo")}
                   className={`px-3 py-1 rounded-full text-xs font-bold transition ${accountMode==="demo"?"bg-blue-500 text-white shadow-lg shadow-blue-500/30":"text-gray-500 hover:text-white"}`}>
@@ -88,16 +92,12 @@ export default function Navbar() {
                   💰 REAL
                 </button>
               </div>
-
-              {/* Balance */}
               <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 border ${accountMode==="demo"?"bg-blue-500/10 border-blue-500/30":"bg-[#f0b429]/10 border-[#f0b429]/30"}`}>
                 <span className={`text-sm font-heading font-bold ${accountMode==="demo"?"text-blue-400":"text-[#f0b429]"}`}>${activeBalance.toFixed(2)}</span>
                 {accountMode==="demo" && (
                   <button onClick={resetDemo} className="text-[10px] text-blue-400 hover:text-blue-300" title="Reset demo balance">↻</button>
                 )}
               </div>
-
-              {/* Avatar + Dropdown */}
               <div className="relative">
                 <button onClick={() => setShowDropdown(!showDropdown)}
                   className="w-9 h-9 rounded-full bg-[#1a2235] border border-[#ffffff0f] flex items-center justify-center text-lg hover:border-[#f0b429] transition">
@@ -108,20 +108,11 @@ export default function Navbar() {
                     <div className="p-3 border-b border-[#ffffff0f]">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{avatar}</span>
-                        <div>
-                          <p className="text-white text-sm font-bold">{username}</p>
-                          <p className="text-gray-500 text-xs">{accountMode==="demo"?"Demo Account":"Real Account"}</p>
-                        </div>
+                        <div><p className="text-white text-sm font-bold">{username}</p><p className="text-gray-500 text-xs">{accountMode==="demo"?"Demo Account":"Real Account"}</p></div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
-                        <div className="bg-[#1a2235] rounded-lg p-2 text-center">
-                          <p className="text-gray-500">Demo</p>
-                          <p className="text-blue-400 font-bold">${demoBalance.toFixed(0)}</p>
-                        </div>
-                        <div className="bg-[#1a2235] rounded-lg p-2 text-center">
-                          <p className="text-gray-500">Real</p>
-                          <p className="text-[#f0b429] font-bold">${realBalance.toFixed(0)}</p>
-                        </div>
+                        <div className="bg-[#1a2235] rounded-lg p-2 text-center"><p className="text-gray-500">Demo</p><p className="text-blue-400 font-bold">${demoBalance.toFixed(0)}</p></div>
+                        <div className="bg-[#1a2235] rounded-lg p-2 text-center"><p className="text-gray-500">Real</p><p className="text-[#f0b429] font-bold">${realBalance.toFixed(0)}</p></div>
                       </div>
                     </div>
                     <Link href="/profile" onClick={() => setShowDropdown(false)} className="block px-4 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 no-underline">👤 Profile</Link>
@@ -131,12 +122,12 @@ export default function Navbar() {
                 )}
               </div>
             </>
-          ) : mounted ? (
+          ) : (
             <>
               <Link href="/auth/login" className="bg-[#f0b429] text-black font-bold px-5 py-2 rounded-lg text-sm no-underline">Sign In</Link>
               <Link href="/auth/signup" className="border border-[#f0b429]/30 text-[#f0b429] font-bold px-5 py-2 rounded-lg text-sm no-underline hidden sm:block">Register</Link>
             </>
-          ) : null}
+          )}
         </div>
       </div>
     </header>

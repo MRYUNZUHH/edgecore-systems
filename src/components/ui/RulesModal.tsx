@@ -12,16 +12,24 @@ interface RulesModalProps {
 
 export default function RulesModal({ gameKey, title, emoji, rules, accentColor = "#f0b429" }: RulesModalProps) {
   const [show, setShow] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const seen = localStorage.getItem("rules_seen_" + gameKey);
-    if (!seen) setShow(true);
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const seen = localStorage.getItem("rules_seen_" + gameKey);
+      if (!seen) setShow(true);
+    }
   }, [gameKey]);
 
   const dismiss = () => {
-    localStorage.setItem("rules_seen_" + gameKey, "true");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("rules_seen_" + gameKey, "true");
+    }
     setShow(false);
   };
+
+  if (!mounted) return null;
 
   return (
     <AnimatePresence>
@@ -53,11 +61,7 @@ export default function RulesModal({ gameKey, title, emoji, rules, accentColor =
                 </li>
               ))}
             </ol>
-            <button
-              onClick={dismiss}
-              className="w-full py-3 rounded-lg font-bold text-black transition hover:brightness-110"
-              style={{ background: accentColor }}
-            >
+            <button onClick={dismiss} className="w-full py-3 rounded-lg font-bold text-black transition hover:brightness-110" style={{ background: accentColor }}>
               I Understand – Let&apos;s Play!
             </button>
           </motion.div>
