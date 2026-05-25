@@ -19,7 +19,7 @@ export default function Page() {
   };
 
   return (
-    <GameShell title="Dragon Tower" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+    <GameShell title="Book of Dead" rtp={96} history={hist.slice(0, 15).map((h, i) => (
       <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
     ))}>
       <div className="bg-[#13131f] rounded-xl p-6 text-center">

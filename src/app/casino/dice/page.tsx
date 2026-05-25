@@ -1,45 +1,38 @@
 "use client";
 import { useState } from "react";
-import { useBalance } from "@/hooks/useBalance";
-import GameLayout from "@/components/layout/GameLayout";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
 
-export default function DicePage() {
+export default function Page() {
   const { balance, placeBet, addWinnings } = useBalance();
-  const [bet, setBet] = useState(50); const [target, setTarget] = useState(50);
-  const [over, setOver] = useState(false); const [result, setResult] = useState<number|null>(null);
-  const [rolling, setRolling] = useState(false); const [lastWin, setLastWin] = useState(false);
-  const multiplier = parseFloat((99/(over?99-target:target)).toFixed(2));
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
 
-  const roll = () => {
-    if(!placeBet(bet)) return alert("Insufficient balance");
-    setRolling(true); setResult(null);
-    setTimeout(() => {
-      const r = Math.floor(Math.random()*10000)/100;
-      setResult(r); const win = over ? r>target : r<target; setLastWin(win);
-      if(win) addWinnings(bet*multiplier);
-      setRolling(false);
-    }, 800);
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
   };
 
   return (
-    <GameLayout title="🎲 Dice" rtp={96}>
-      <div className="bg-[#12121a] rounded-xl p-6 text-center mb-4">
-        <div className="text-6xl font-bold text-white my-6">{result!==null?result.toFixed(2):"?"}</div>
-        {result!==null&&<p className={`text-lg font-bold ${lastWin?"text-[#00ff88]":"text-red-400"}`}>{lastWin?`Won $${(bet*multiplier).toFixed(2)}`:"Lost"}</p>}
+    <GameShell title="Dice" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
       </div>
-      <div className="bg-[#12121a] rounded-xl p-4 space-y-3">
+      <div className="mt-4 space-y-3">
         <div className="flex gap-2">
-          <button onClick={()=>setOver(false)} className={`flex-1 py-2 rounded-lg font-bold text-sm ${!over?"bg-[#f0b429] text-black":"bg-gray-800 text-gray-400"}`}>Roll Under</button>
-          <button onClick={()=>setOver(true)} className={`flex-1 py-2 rounded-lg font-bold text-sm ${over?"bg-[#f0b429] text-black":"bg-gray-800 text-gray-400"}`}>Roll Over</button>
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
         </div>
-        <input type="range" min={2} max={98} value={target} onChange={e=>setTarget(Number(e.target.value))} className="w-full" />
-        <p className="text-center text-xs text-gray-400">Target: {target} · Win: {over?99-target:target}% · Payout: {multiplier.toFixed(2)}x</p>
-        <div className="flex gap-2">
-          <input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2" />
-          {[10,50,100,500].map(v=><button key={v} onClick={()=>setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
-        </div>
-        <button onClick={roll} disabled={rolling} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Roll Dice</button>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
       </div>
-    </GameLayout>
+    </GameShell>
   );
 }

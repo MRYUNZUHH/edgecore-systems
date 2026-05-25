@@ -1,1 +1,38 @@
-"use client";import{useState}from"react";import{useBalance}from"@/hooks/useBalance";import GameLayout from"@/components/layout/GameLayout";export default function KenoPage(){const{balance,placeBet,addWinnings}=useBalance();const[bet,setBet]=useState(50);const[picks,setPicks]=useState<number[]>([]);const[drawn,setDrawn]=useState<number[]>([]);const[result,setResult]=useState<number|null>(null);const toggle=(n:number)=>{if(picks.includes(n))setPicks(picks.filter(p=>p!==n));else if(picks.length<10)setPicks([...picks,n]);};const play=()=>{if(picks.length===0||!placeBet(bet))return;const d=Array.from({length:40},(_,i)=>i+1).sort(()=>Math.random()-0.5).slice(0,10);setDrawn(d);const m=d.filter(n=>picks.includes(n)).length;setResult(m);if(m>=4)addWinnings(bet*m*2);};return(<GameLayout title="🎯 Keno" rtp={95}><div className="bg-[#12121a] rounded-xl p-4 text-center mb-4"><p className="text-sm text-gray-400 mb-2">Pick {picks.length}/10</p><div className="grid grid-cols-8 gap-1 mb-4">{Array.from({length:40},(_,i)=>i+1).map(n=><button key={n} onClick={()=>toggle(n)} className={`aspect-square rounded text-xs font-bold ${picks.includes(n)?"bg-[#f0b429] text-black":drawn.includes(n)?"bg-blue-500/20 text-white":"bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>{n}</button>)}</div>{result!==null&&<p className="text-lg font-bold text-[#f0b429]">Matched {result}/10! {result>=4?`Won $${bet*result*2}`:"Lost"}</p>}</div><div className="bg-[#12121a] rounded-xl p-4 space-y-3"><div className="flex gap-2"><input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2"/></div><button onClick={play} disabled={picks.length===0} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button></div></GameLayout>);}
+"use client";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
+
+export default function Page() {
+  const { balance, placeBet, addWinnings } = useBalance();
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
+
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
+  };
+
+  return (
+    <GameShell title="Keno" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="flex gap-2">
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
+        </div>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
+      </div>
+    </GameShell>
+  );
+}

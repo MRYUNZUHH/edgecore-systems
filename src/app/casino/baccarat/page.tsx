@@ -1,1 +1,38 @@
-"use client";import{useState}from"react";import{useBalance}from"@/hooks/useBalance";import GameLayout from"@/components/layout/GameLayout";const CARDS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];function val(c:string){if(c==="A")return 1;if(["10","J","Q","K"].includes(c))return 0;return parseInt(c);}export default function BaccaratPage(){const{balance,placeBet,addWinnings}=useBalance();const[bet,setBet]=useState(50);const[choice,setChoice]=useState<"player"|"banker"|"tie">("player");const[pCards,setPCards]=useState<string[]>([]);const[bCards,setBCards]=useState<string[]>([]);const[result,setResult]=useState("");const deal=()=>{if(!placeBet(bet))return;const pc=[CARDS[Math.floor(Math.random()*13)],CARDS[Math.floor(Math.random()*13)]];const bc=[CARDS[Math.floor(Math.random()*13)],CARDS[Math.floor(Math.random()*13)]];setPCards(pc);setBCards(bc);const pt=(val(pc[0])+val(pc[1]))%10;const bt=(val(bc[0])+val(bc[1]))%10;let w="";if(pt>bt)w="player";else if(bt>pt)w="banker";else w="tie";setResult(w);if((w==="player"&&choice==="player")||(w==="banker"&&choice==="banker"))addWinnings(choice==="banker"?bet*1.95:bet*2);if(w==="tie"&&choice==="tie")addWinnings(bet*8);};return(<GameLayout title="🎴 Baccarat" rtp={98.9}><div className="bg-[#12121a] rounded-xl p-4 text-center mb-4"><div className="flex justify-center gap-8 mb-4"><div><p className="text-xs text-gray-400">Player</p><p className="text-3xl font-bold text-white">{(val(pCards[0]||"0")+val(pCards[1]||"0"))%10}</p></div><div><p className="text-xs text-gray-400">Banker</p><p className="text-3xl font-bold text-white">{(val(bCards[0]||"0")+val(bCards[1]||"0"))%10}</p></div></div>{result&&<p className="text-lg font-bold text-[#f0b429]">Winner: {result.toUpperCase()}</p>}</div><div className="bg-[#12121a] rounded-xl p-4 space-y-3"><div className="flex gap-2"><button onClick={()=>setChoice("player")} className={`flex-1 py-2 rounded-lg font-bold text-sm ${choice==="player"?"bg-[#f0b429] text-black":"bg-gray-800 text-gray-400"}`}>Player</button><button onClick={()=>setChoice("banker")} className={`flex-1 py-2 rounded-lg font-bold text-sm ${choice==="banker"?"bg-[#f0b429] text-black":"bg-gray-800 text-gray-400"}`}>Banker</button><button onClick={()=>setChoice("tie")} className={`flex-1 py-2 rounded-lg font-bold text-sm ${choice==="tie"?"bg-[#f0b429] text-black":"bg-gray-800 text-gray-400"}`}>Tie (8x)</button></div><div className="flex gap-2"><input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2"/></div><button onClick={deal} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Deal</button></div></GameLayout>);}
+"use client";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
+
+export default function Page() {
+  const { balance, placeBet, addWinnings } = useBalance();
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
+
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
+  };
+
+  return (
+    <GameShell title="Baccarat" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="flex gap-2">
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
+        </div>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
+      </div>
+    </GameShell>
+  );
+}

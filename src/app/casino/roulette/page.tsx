@@ -1,6 +1,38 @@
-"use client";import { useState } from "react";import { useBalance } from "@/hooks/useBalance";import GameLayout from "@/components/layout/GameLayout";
-const RED=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];const NUMS=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-export default function RoulettePage(){const{balance,placeBet,addWinnings}=useBalance();const[bet,setBet]=useState(50);const[bets,setBets]=useState<any[]>([]);const[result,setResult]=useState<number|null>(null);const[spinning,setSpinning]=useState(false);const[history,setHistory]=useState<number[]>([]);
-const place=(type:string,val?:number)=>{setBets(p=>[...p,{type,val,amount:bet}]);};
-const spin=()=>{const totalB=bets.reduce((s,b)=>s+b.amount,0);if(!placeBet(totalB))return;setSpinning(true);setResult(null);const num=Math.floor(Math.random()*37);setTimeout(()=>{setResult(num);let win=0;bets.forEach(b=>{if(b.type==="number"&&b.val===num)win+=b.amount*35;if(b.type==="red"&&RED.includes(num))win+=b.amount*2;if(b.type==="black"&&!RED.includes(num)&&num!==0)win+=b.amount*2;if(b.type==="even"&&num%2===0&&num!==0)win+=b.amount*2;if(b.type==="odd"&&num%2===1)win+=b.amount*2;});if(win>0)addWinnings(win);setHistory(p=>[num,...p].slice(0,20));setSpinning(false);setBets([]);},3000);};
-return(<GameLayout title="🎡 Roulette" rtp={97.3}><div className="bg-[#12121a] rounded-xl p-6 text-center mb-4"><div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center text-4xl font-black border-4 border-[#f0b429] transition-all duration-[3s] ${spinning?"animate-spin":""}`} style={{background:"radial-gradient(circle,#1a1a2e 60%,#2d2d44 100%)"}}><span className="text-white">{result!==null?result:"?"}</span></div>{result!==null&&<p className={`mt-2 font-bold ${RED.includes(result)?"text-red-400":"text-gray-400"}`}>Result: {result}</p>}<div className="flex gap-1.5 flex-wrap justify-center mt-3">{history.slice(0,10).map((h,i)=><span key={i} className={`px-2 py-0.5 rounded text-xs font-bold ${RED.includes(h)?"bg-red-500/20 text-red-400":"bg-gray-500/20 text-gray-400"}`}>{h}</span>)}</div></div><div className="bg-[#12121a] rounded-xl p-4 space-y-3"><div className="flex gap-2 flex-wrap justify-center"><button onClick={()=>place("red")} className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold text-sm">Red 2x</button><button onClick={()=>place("black")} className="px-4 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm">Black 2x</button><button onClick={()=>place("even")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Even 2x</button><button onClick={()=>place("odd")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Odd 2x</button></div><div className="grid grid-cols-6 gap-1">{NUMS.slice(0,12).map(n=><button key={n} onClick={()=>place("number",n)} className={`aspect-square rounded text-xs font-bold ${RED.includes(n)?"bg-red-500":"bg-gray-800"} text-white`}>{n}</button>)}</div><div className="flex gap-2"><input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2"/></div><p className="text-xs text-gray-400">Bets: {bets.length} · Total: ${bets.reduce((s,b)=>s+b.amount,0)}</p><button onClick={spin} disabled={spinning||bets.length===0} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Spin</button></div></GameLayout>);}
+"use client";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
+
+export default function Page() {
+  const { balance, placeBet, addWinnings } = useBalance();
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
+
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
+  };
+
+  return (
+    <GameShell title="Roulette" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="flex gap-2">
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
+        </div>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
+      </div>
+    </GameShell>
+  );
+}

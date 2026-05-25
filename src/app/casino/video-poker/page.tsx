@@ -1,1 +1,38 @@
-"use client";import{useState}from"react";import{useBalance}from"@/hooks/useBalance";import GameLayout from"@/components/layout/GameLayout";const SUITS=["♠","♥","♦","♣"];const RANKS=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];function deck(){return SUITS.flatMap(s=>RANKS.map(r=>({s,r}))).sort(()=>Math.random()-0.5);}export default function VideoPokerPage(){const{balance,placeBet,addWinnings}=useBalance();const[bet,setBet]=useState(10);const[hand,setHand]=useState<any[]>([]);const[held,setHeld]=useState<boolean[]>([false,false,false,false,false]);const[phase,setPhase]=useState<"bet"|"draw"|"result">("bet");const[msg,setMsg]=useState("");const deal=()=>{if(!placeBet(bet))return;setHand(deck().slice(0,5));setHeld([false,false,false,false,false]);setPhase("draw");};const draw=()=>{const d=deck();const nh=hand.map((c,i)=>held[i]?c:d.pop()!);setHand(nh);setPhase("result");const isPair=nh.some((c,i)=>nh.some((c2,j)=>i!==j&&c2.r===c.r));if(isPair){addWinnings(bet*2);setMsg("Pair! Won $"+bet*2);}else{setMsg("No win");}};const toggle=(i:number)=>{const h=[...held];h[i]=!h[i];setHeld(h);};return(<GameLayout title="🎰 Video Poker" rtp={98}><div className="bg-[#12121a] rounded-xl p-4 text-center mb-4"><div className="flex gap-2 justify-center mb-4">{hand.map((c,i)=><button key={i} onClick={()=>toggle(i)} className={`w-14 h-20 rounded-lg border-2 flex flex-col items-center justify-center font-bold text-sm transition ${held[i]?"border-[#f0b429] bg-[#f0b429]/10":"border-gray-700 bg-[#0a0a0f]"} ${c.r==="♥"||c.r==="♦"?"text-red-400":"text-white"}`}><span>{c.r}</span><span className="text-lg">{c.s}</span></button>)}</div>{msg&&<p className="font-bold text-[#f0b429]">{msg}</p>}</div><div className="bg-[#12121a] rounded-xl p-4 space-y-3">{phase==="bet"?<><div className="flex gap-2"><input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2"/></div><button onClick={deal} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Deal</button></>:phase==="draw"?<button onClick={draw} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Draw</button>:<button onClick={()=>{setPhase("bet");setHand([]);setMsg("");}} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play Again</button>}</div></GameLayout>);}
+"use client";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
+
+export default function Page() {
+  const { balance, placeBet, addWinnings } = useBalance();
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
+
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
+  };
+
+  return (
+    <GameShell title="Video Poker" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="flex gap-2">
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
+        </div>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
+      </div>
+    </GameShell>
+  );
+}

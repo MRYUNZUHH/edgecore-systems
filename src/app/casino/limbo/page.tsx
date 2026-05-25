@@ -1,1 +1,38 @@
-"use client";import{useState}from"react";import{useBalance}from"@/hooks/useBalance";import GameLayout from"@/components/layout/GameLayout";export default function LimboPage(){const{balance,placeBet,addWinnings}=useBalance();const[bet,setBet]=useState(50);const[target,setTarget]=useState(2);const[result,setResult]=useState<number|null>(null);const[lastWin,setLastWin]=useState(false);const play=()=>{if(!placeBet(bet))return;const r=parseFloat((1/(1-Math.random())*0.99).toFixed(2));setResult(r);const win=r>=target;setLastWin(win);if(win)addWinnings(bet*target);};return(<GameLayout title="🔮 Limbo" rtp={97}><div className="bg-[#12121a] rounded-xl p-6 text-center mb-4"><div className="text-6xl font-bold text-white my-6">{result!==null?result.toFixed(2)+"x":"?"}</div>{result!==null&&<p className={`text-lg font-bold ${lastWin?"text-[#00ff88]":"text-red-400"}`}>{lastWin?`Won $${(bet*target).toFixed(2)}`:"Lost"}</p>}</div><div className="bg-[#12121a] rounded-xl p-4 space-y-3"><div><label className="text-xs text-gray-400">Target: {target}x</label><input type="range" min={1.1} max={100} step={0.1} value={target} onChange={e=>setTarget(Number(e.target.value))} className="w-full mt-1"/></div><p className="text-xs text-gray-400">Win Chance: {(1/target*100).toFixed(2)}% · Payout: {target.toFixed(2)}x</p><div className="flex gap-2"><input type="number" value={bet} onChange={e=>setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white px-4 py-2"/></div><button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play Limbo</button></div></GameLayout>);}
+"use client";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
+import GameShell from "@/components/layout/GameShell";
+
+export default function Page() {
+  const { balance, placeBet, addWinnings } = useBalance();
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+  const [hist, setHist] = useState<string[]>([]);
+
+  const play = () => {
+    if (!placeBet(bet)) return;
+    const win = Math.random() > 0.06;
+    const payout = win ? bet * (Math.random() * 3 + 0.5) : 0;
+    if (win) addWinnings(payout);
+    setResult(win ? "Won $" + payout.toFixed(2) : "Lost");
+    setHist(p => [win ? "+$" + payout.toFixed(0) : "-$" + bet, ...p].slice(0, 20));
+  };
+
+  return (
+    <GameShell title="Limbo" rtp={96} history={hist.slice(0, 15).map((h, i) => (
+      <span key={i} className={h.startsWith("+") ? "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-green-500/20 text-green-400" : "inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 bg-red-500/20 text-red-400"}>{h}</span>
+    ))}>
+      <div className="bg-[#13131f] rounded-xl p-6 text-center">
+        <p className="text-sm text-gray-400 mb-2">Balance: <span className="text-[#00ff88] font-bold">${balance.toFixed(2)}</span></p>
+        <div className="text-4xl font-bold text-[#f0b429] my-6">{result || "Play now!"}</div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <div className="flex gap-2">
+          <input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />
+          {[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}
+        </div>
+        <button onClick={play} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Play</button>
+      </div>
+    </GameShell>
+  );
+}
