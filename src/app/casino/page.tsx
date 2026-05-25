@@ -1,32 +1,3 @@
-"use client";
-import Link from "next/link";
-import MobileNav from "@/components/layout/MobileNav";
-
-const games = [
-  {n:"Aviator",e:"✈️",h:"/casino/aviator",c:"Originals",hot:true},{n:"Crash",e:"📈",h:"/casino/crash",c:"Originals",hot:true},
-  {n:"Mines",e:"💣",h:"/casino/mines",c:"Originals"},{n:"Plinko",e:"🟡",h:"/casino/plinko",c:"Originals",new:true},
-  {n:"Dice",e:"🎲",h:"/casino/dice",c:"Originals"},{n:"Limbo",e:"🔮",h:"/casino/limbo",c:"Originals"},
-  {n:"Wheel",e:"🎡",h:"/casino/wheel",c:"Originals"},{n:"HiLo",e:"🃏",h:"/casino/hilo",c:"Originals"},
-  {n:"Blackjack",e:"🃏",h:"/casino/blackjack",c:"Table"},{n:"Roulette",e:"🎡",h:"/casino/roulette",c:"Table"},
-  {n:"Starburst",e:"⭐",h:"/casino/starburst",c:"Slots"},
-];
-
-export default function CasinoPage() {
-  return (
-    <div className="pb-20 lg:pb-0">
-      <div className="max-w-7xl mx-auto p-4">
-        <h1 className="text-3xl font-heading font-bold text-[#f0b429] mb-6">🎮 Casino Lobby</h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {games.map(g => <Link key={g.n} href={g.h} className="bg-[#0f1520] border border-[#ffffff0f] rounded-xl p-4 cursor-pointer no-underline hover:border-[#f0b429]/50 hover:shadow-[0_0_20px_rgba(240,180,41,0.15)] transition relative group">
-            {g.hot&&<span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">HOT</span>}
-            {g.new&&<span className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">NEW</span>}
-            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{g.e}</div>
-            <h3 className="text-white font-bold text-sm">{g.n}</h3>
-            <span className="text-xs text-gray-500">{g.c}</span>
-          </Link>)}
-        </div>
-      </div>
-      <MobileNav />
-    </div>
-  );
-}
+"use client";import{useState}from"react";import Link from"next/link";import MobileNav from"@/components/layout/MobileNav";import LiveFeed from"@/components/ui/LiveFeed";
+const games=[{n:"Aviator",e:"✈️",h:"/casino/aviator",c:"Originals",hot:!0},{n:"Crash",e:"📈",h:"/casino/crash",c:"Originals",hot:!0},{n:"Mines",e:"💣",h:"/casino/mines",c:"Originals"},{n:"Plinko",e:"🟡",h:"/casino/plinko",c:"Originals",new:!0},{n:"Dice",e:"🎲",h:"/casino/dice",c:"Originals"},{n:"Limbo",e:"🔮",h:"/casino/limbo",c:"Originals"},{n:"Wheel",e:"🎡",h:"/casino/wheel",c:"Originals"},{n:"HiLo",e:"🃏",h:"/casino/hilo",c:"Originals"},{n:"Dragon Tower",e:"🗼",h:"/casino/dragon-tower",c:"Originals"},{n:"Pump",e:"🎈",h:"/casino/pump",c:"Originals"},{n:"Keno",e:"🎯",h:"/casino/keno",c:"Originals"},{n:"Blackjack",e:"🃏",h:"/casino/blackjack",c:"Table"},{n:"Roulette",e:"🎡",h:"/casino/roulette",c:"Table"},{n:"Baccarat",e:"🎴",h:"/casino/baccarat",c:"Table"},{n:"Video Poker",e:"🎰",h:"/casino/video-poker",c:"Table"},{n:"Three Card",e:"🃏",h:"/casino/three-card-poker",c:"Table"},{n:"Pai Gow",e:"🀄",h:"/casino/pai-gow",c:"Table"},{n:"Starburst",e:"⭐",h:"/casino/starburst",c:"Slots"},{n:"Book of Dead",e:"📖",h:"/casino/book-of-dead",c:"Slots"},{n:"Gates Olympus",e:"⚡",h:"/casino/gates-of-olympus",c:"Slots"},{n:"Sweet Bonanza",e:"🍬",h:"/casino/sweet-bonanza",c:"Slots"},{n:"Big Bass",e:"🐟",h:"/casino/big-bass-bonanza",c:"Slots"},{n:"Wolf Gold",e:"🐺",h:"/casino/wolf-gold",c:"Slots"},{n:"Reactoonz",e:"👾",h:"/casino/reactoonz",c:"Slots"},{n:"Jammin Jars",e:"🍯",h:"/casino/jammin-jars",c:"Slots"},{n:"Dog House",e:"🐕",h:"/casino/dog-house",c:"Slots"},{n:"Dead or Alive",e:"💀",h:"/casino/deadorsalive",c:"Slots"},{n:"Fire Joker",e:"🔥",h:"/casino/fire-joker",c:"Slots"},{n:"Crazy Time",e:"🎪",h:"/casino/crazy-time",c:"Live"},{n:"Lightning Roulette",e:"⚡",h:"/casino/lightning-roulette",c:"Live"}];
+export default function CasinoPage(){const[cat,setCat]=useState("All");const[search,setSearch]=useState("");const filtered=games.filter(g=>(cat==="All"||g.c===cat)&&(!search||g.n.toLowerCase().includes(search.toLowerCase())));return(<div className="pb-20 lg:pb-0"><LiveFeed/><div className="max-w-7xl mx-auto p-4"><h1 className="text-3xl font-heading font-bold text-[#f0b429] mb-4">🎮 Casino Lobby</h1><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search games..." className="w-full bg-[#0f1520] border border-[#ffffff0f] rounded-lg text-white px-4 py-2 mb-4"/><div className="flex gap-2 overflow-x-auto pb-3 mb-4">{[{l:"All",v:"All"},{l:"Originals",v:"Originals"},{l:"Table Games",v:"Table"},{l:"Slots",v:"Slots"},{l:"Live",v:"Live"}].map(t=><button key={t.v} onClick={()=>setCat(t.v)} className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${cat===t.v?"bg-[#f0b429] text-black":"bg-[#0f1520] text-gray-400 border border-[#ffffff0f]"}`}>{t.l}</button>)}</div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">{filtered.map(g=><Link key={g.n} href={g.h} className="bg-[#0f1520] border border-[#ffffff0f] rounded-xl p-3 cursor-pointer no-underline hover:border-[#f0b429]/50 hover:shadow-[0_0_20px_rgba(240,180,41,0.15)] transition relative group">{g.hot&&<span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">HOT</span>}{g.new&&<span className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">NEW</span>}<div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{g.e}</div><h3 className="text-white font-bold text-xs">{g.n}</h3><span className="text-gray-500 text-[10px]">{g.c}</span></Link>)}</div></div><MobileNav/></div>);}
