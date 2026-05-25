@@ -1,1 +1,76 @@
-"use client";import{useEffect,useState}from"react";const names=["Kwame","Amina","Joao","Fatou","Carlos","Priya","Liu","Ayesha","Mike","Sara","Omar","Nia","Kwesi","Zara","Dev","Ahmad","Patel","Maria","John","Ling"];const games=["Aviator","Crash","Mines","Plinko","Dice","Roulette","Blackjack","Limbo","Wheel","HiLo"];export default function LiveFeed(){const[items,setItems]=useState<string[]>([]);useEffect(()=>{const g=()=>`${names[Math.floor(Math.random()*20)]} won $${(Math.random()*5000+10).toFixed(0)} on ${games[Math.floor(Math.random()*10)]}`;setItems(Array.from({length:6},g));const i=setInterval(()=>setItems(p=>[g(),...p].slice(0,12)),2500);return()=>clearInterval(i)},[]);return(<div className="bg-[#0f1520] border-y border-[#ffffff0f] py-2 overflow-hidden relative"><div className="flex gap-8 animate-[scrollLeft_30s_linear_infinite] whitespace-nowrap">{[...items,...items].map((t,i)=><span key={i} className="text-xs text-gray-400">{t}</span>)}</div><div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0f1520] to-transparent pointer-events-none"/><div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0f1520] to-transparent pointer-events-none"/></div>);}
+"use client";
+import { useEffect, useState, useRef } from "react";
+
+const NAMES = [
+  "Kwame","Amina","Joao","Fatou","Carlos","Priya","Liu","Ayesha","Mike","Sara",
+  "Omar","Nia","Kwesi","Zara","Dev","Ahmad","Patel","Maria","John","Ling",
+  "Ahmed","Bella","Chi","Dmitri","Elena","Femi","Grace","Hiro","Imani","Jamal",
+  "Kai","Leila","Malik","Nala","Oscar","Petra","Qi","Ravi","Sofia","Tariq",
+  "Uma","Vlad","Wei","Xena","Yuki","Zain","Amara","Boris","Cleo","Diego"
+];
+
+const GAMES = [
+  "Aviator","Crash","Mines","Plinko","Dice","Roulette","Blackjack",
+  "Limbo","Wheel","HiLo","Keno","Baccarat","Starburst","Video Poker"
+];
+
+export default function LiveFeed() {
+  const [items, setItems] = useState<{ id: number; text: string }[]>([]);
+  const lastNames = useRef<string[]>([]);
+  const lastGames = useRef<string[]>([]);
+  const idCounter = useRef(0);
+
+  const getRandomName = (): string => {
+    const available = NAMES.filter(n => !lastNames.current.includes(n));
+    const pool = available.length >= 5 ? available : NAMES;
+    const name = pool[Math.floor(Math.random() * pool.length)];
+    lastNames.current = [...lastNames.current, name].slice(-8);
+    return name;
+  };
+
+  const getRandomGame = (): string => {
+    const available = GAMES.filter(g => !lastGames.current.includes(g));
+    const pool = available.length >= 3 ? available : GAMES;
+    const game = pool[Math.floor(Math.random() * pool.length)];
+    lastGames.current = [...lastGames.current, game].slice(-5);
+    return game;
+  };
+
+  const generateEntry = () => {
+    const name = getRandomName();
+    const game = getRandomGame();
+    const amount = Math.floor(Math.random() * 4500) + 10;
+    const id = idCounter.current++;
+    const text = name + " won $" + amount + " on " + game;
+    return { id, text };
+  };
+
+  useEffect(() => {
+    // Seed initial entries
+    const initial = Array.from({ length: 8 }, () => generateEntry());
+    setItems(initial);
+
+    const interval = setInterval(() => {
+      setItems(prev => {
+        const next = [generateEntry(), ...prev];
+        return next.slice(0, 20);
+      });
+    }, 2500 + Math.random() * 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="bg-[#0f1520] border-y border-[#ffffff0f] py-2 overflow-hidden relative">
+      <div className="flex gap-10 animate-[scrollLeft_40s_linear_infinite] whitespace-nowrap">
+        {[...items, ...items].map((item) => (
+          <span key={item.id} className="text-xs text-gray-400">
+            {item.text}
+          </span>
+        ))}
+      </div>
+      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0f1520] to-transparent pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#0f1520] to-transparent pointer-events-none" />
+    </div>
+  );
+}
