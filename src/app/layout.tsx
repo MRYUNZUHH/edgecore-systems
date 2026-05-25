@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BackgroundCanvas from "@/components/BackgroundCanvas";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "EdgeCore | Premium Casino",
@@ -12,9 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen">
         <BackgroundCanvas />
-        <div style={{ position: "relative", zIndex: 1 }}>
+        <Navbar />
+        <main style={{ position: "relative", zIndex: 1 }}>
           {children}
-        </div>
+        </main>
       </body>
     </html>
   );
