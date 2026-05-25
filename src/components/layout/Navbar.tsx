@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/hooks/useAuth";
+import Logo from '@/components/Logo';
 import Link from "next/link";
 
 export default function Navbar() {
@@ -9,7 +10,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 no-underline shrink-0">
-            <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center text-black font-bold text-base">◆</div>
+            <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center text-black font-bold text-base">â—†</div>
             <span className="font-heading font-bold text-gold text-xl tracking-wide">EDGECORE</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-5 text-sm">

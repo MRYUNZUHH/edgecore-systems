@@ -2,10 +2,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/layout/Navbar";
 import MobileNav from "@/components/layout/MobileNav";
 import LiveTicker from "@/components/ui/LiveTicker";
-import { ToastContainer, toast } from "@/components/ui/Toast";
+import { ToastContainer } from "@/components/ui/Toast";
 
 const categories = ["All","Crash","Slots","Table","Live","Sports"];
 const games = [
@@ -58,19 +57,16 @@ export default function Home() {
   const filtered = activeCat==="All" ? games : games.filter(g=>g.c===activeCat);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="flex flex-col">
       <LiveTicker />
       <ToastContainer />
       <main className="flex-1 pb-20 lg:pb-0">
-        {/* Success Banner */}
         {showBanner && (
           <div className="bg-green-500/10 border border-green-500/20 text-center py-3 px-4 animate-fade-in-up">
             <p className="text-green-400 font-bold">🎉 Welcome back, {user?.username}! Your $10,000 balance is ready</p>
           </div>
         )}
 
-        {/* Hero */}
         <section className="relative px-4 py-12 lg:py-20" style={{background:'radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 60%)'}}>
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div className="space-y-6">
@@ -96,12 +92,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stats Bar */}
         <section className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[{l:"Online Now",v:"47,231",c:"text-green-400"},{l:"Paid Today",v:"$2.8M",c:"text-gold"},{l:"Games",v:"200+",c:"text-blue-400"},{l:"Support",v:"24/7",c:"text-purple-400"}].map(s=><div key={s.l} className="card p-5 text-center"><p className={`text-2xl font-heading font-bold ${s.c}`}>{s.v}</p><p className="text-xs text-muted mt-1">{s.l}</p></div>)}
         </section>
 
-        {/* Featured Games */}
         <section className="max-w-7xl mx-auto px-4 mb-10">
           <h2 className="text-2xl font-heading font-bold text-white mb-6">Featured Games</h2>
           <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
@@ -116,7 +110,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Live Games */}
         <section className="max-w-7xl mx-auto px-4 mb-10">
           <h2 className="text-2xl font-heading font-bold text-white mb-6">🔴 Live Games</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -124,7 +117,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Big Wins */}
         <section className="max-w-7xl mx-auto px-4 mb-10">
           <h2 className="text-2xl font-heading font-bold text-white mb-6">🏆 Recent Big Wins</h2>
           <div className="card overflow-x-auto">
@@ -135,7 +127,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Promotions */}
         <section className="max-w-7xl mx-auto px-4 mb-10">
           <h2 className="text-2xl font-heading font-bold text-white mb-6">🎁 Promotions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
