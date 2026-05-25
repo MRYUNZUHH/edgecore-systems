@@ -1,13 +1,12 @@
 "use client";
-import { useState } from "react";
-import { useBalance } from "@/lib/useBalance";
+import { useState, useEffect, useRef } from "react";
 import GameShell from "@/components/layout/GameShell";
 import RulesModal from "@/components/ui/RulesModal";
 import { rollFloat } from "@/lib/gameEngine";
-import { playDiceRoll, playWin, playClick } from "@/lib/sounds";
+import { playDiceRoll, playWin } from "@/lib/sounds";
+import { placeBet, addWinnings } from "@/lib/gameBalance";
 
 export default function Page() {
-  const { balance, placeBet, addWinnings } = useBalance();
   const [bet, setBet] = useState(50);
   const [target, setTarget] = useState(50);
   const [over, setOver] = useState(false);
@@ -17,14 +16,20 @@ export default function Page() {
   const [dice1, setDice1] = useState(1);
   const [dice2, setDice2] = useState(1);
   const multiplier = parseFloat((99 / (over ? 99 - target : target)).toFixed(2));
+  const mountedRef = useRef(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; if (timerRef.current) clearInterval(timerRef.current); }; }, []);
 
   const roll = () => {
     if (!placeBet(bet)) return;
     setRolling(true); setResult(null);
-    const diceInterval = setInterval(() => { setDice1(Math.ceil(Math.random() * 6)); setDice2(Math.ceil(Math.random() * 6)); }, 80);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => { if (mountedRef.current) { setDice1(Math.ceil(Math.random() * 6)); setDice2(Math.ceil(Math.random() * 6)); } }, 80);
     playDiceRoll();
     setTimeout(() => {
-      clearInterval(diceInterval);
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (!mountedRef.current) return;
       const r = rollFloat(); setResult(r);
       const win = over ? r > target : r < target; setLastWin(win);
       setDice1(Math.ceil(r / 16.67)); setDice2(Math.ceil((r % 16.67) / 2.78));
@@ -45,10 +50,7 @@ export default function Page() {
         {result !== null && <p className={"text-lg font-bold " + (lastWin ? "text-[#00ff88]" : "text-red-400")}>{lastWin ? "Won $" + (bet * multiplier).toFixed(2) : "Lost"}</p>}
       </div>
       <div className="mt-4 space-y-3">
-        <div className="flex gap-2">
-          <button onClick={() => setOver(false)} className={"flex-1 py-2 rounded-lg font-bold text-sm " + (!over ? "bg-[#f0b429] text-black" : "bg-gray-800 text-gray-400")}>Roll Under</button>
-          <button onClick={() => setOver(true)} className={"flex-1 py-2 rounded-lg font-bold text-sm " + (over ? "bg-[#f0b429] text-black" : "bg-gray-800 text-gray-400")}>Roll Over</button>
-        </div>
+        <div className="flex gap-2"><button onClick={() => setOver(false)} className={"flex-1 py-2 rounded-lg font-bold text-sm " + (!over ? "bg-[#f0b429] text-black" : "bg-gray-800 text-gray-400")}>Roll Under</button><button onClick={() => setOver(true)} className={"flex-1 py-2 rounded-lg font-bold text-sm " + (over ? "bg-[#f0b429] text-black" : "bg-gray-800 text-gray-400")}>Roll Over</button></div>
         <input type="range" min={2} max={98} value={target} onChange={e => setTarget(Number(e.target.value))} className="w-full" />
         <p className="text-center text-xs text-gray-400">Target: {target} · Win: {over ? 99 - target : target}% · Payout: {multiplier.toFixed(2)}x</p>
         <div className="flex gap-2"><input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" />{[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}</div>

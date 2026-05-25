@@ -1,21 +1,22 @@
 "use client";
-import { useState } from "react";
-import { useBalance } from "@/lib/useBalance";
+import { useState, useEffect, useRef } from "react";
 import GameShell from "@/components/layout/GameShell";
 import RulesModal from "@/components/ui/RulesModal";
 import { playCoin, playWin } from "@/lib/sounds";
+import { placeBet, addWinnings } from "@/lib/gameBalance";
 
 const RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-const NUMS = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
 
 export default function Page() {
-  const { balance, placeBet, addWinnings } = useBalance();
   const [bet, setBet] = useState(50);
   const [bets, setBets] = useState<any[]>([]);
   const [result, setResult] = useState<number | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [hist, setHist] = useState<number[]>([]);
+  const mountedRef = useRef(true);
+
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
 
   const place = (type: string, val?: number) => { setBets(p => [...p, { type, val, amount: bet }]); playCoin(); };
 
@@ -25,9 +26,9 @@ export default function Page() {
     if (!placeBet(totalB)) return;
     setSpinning(true); setResult(null);
     const num = Math.floor(Math.random() * 37);
-    const deg = 360 * 5 + (num / 37) * 360;
-    setRotation(deg);
+    setRotation(360 * 5 + (num / 37) * 360);
     setTimeout(() => {
+      if (!mountedRef.current) return;
       setResult(num); let win = 0;
       bets.forEach(b => { if (b.type === "number" && b.val === num) win += b.amount * 35; if (b.type === "red" && RED.includes(num)) win += b.amount * 2; if (b.type === "black" && !RED.includes(num) && num !== 0) win += b.amount * 2; if (b.type === "even" && num % 2 === 0 && num !== 0) win += b.amount * 2; if (b.type === "odd" && num % 2 === 1) win += b.amount * 2; });
       if (win > 0) { addWinnings(win); playWin(); }
@@ -48,12 +49,7 @@ export default function Page() {
         {result !== null && <p className={"mt-2 font-bold " + (RED.includes(result) ? "text-red-400" : result === 0 ? "text-green-400" : "text-gray-400")}>Result: {result}</p>}
       </div>
       <div className="mt-4 space-y-3">
-        <div className="flex gap-2 flex-wrap justify-center">
-          <button onClick={() => place("red")} className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold text-sm">Red 2x</button>
-          <button onClick={() => place("black")} className="px-4 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm">Black 2x</button>
-          <button onClick={() => place("even")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Even 2x</button>
-          <button onClick={() => place("odd")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Odd 2x</button>
-        </div>
+        <div className="flex gap-2 flex-wrap justify-center"><button onClick={() => place("red")} className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold text-sm">Red 2x</button><button onClick={() => place("black")} className="px-4 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm">Black 2x</button><button onClick={() => place("even")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Even 2x</button><button onClick={() => place("odd")} className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm">Odd 2x</button></div>
         <div className="flex gap-2"><input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" /></div>
         <p className="text-xs text-gray-400">Bets: {bets.length} · Total: ${bets.reduce((s, b) => s + b.amount, 0)}</p>
         <button onClick={spin} disabled={spinning || bets.length === 0} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Spin</button>

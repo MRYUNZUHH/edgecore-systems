@@ -1,13 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useBalance } from "@/lib/useBalance";
 import GameShell from "@/components/layout/GameShell";
 import RulesModal from "@/components/ui/RulesModal";
 import { crashPoint } from "@/lib/gameEngine";
 import { playCoin, playCrash, playWin } from "@/lib/sounds";
+import { placeBet, addWinnings } from "@/lib/gameBalance";
 
 export default function Page() {
-  const { balance, placeBet, addWinnings } = useBalance();
   const [mult, setMult] = useState(1);
   const [phase, setPhase] = useState("betting");
   const [bet, setBet] = useState(50);
@@ -17,11 +16,14 @@ export default function Page() {
   const [countdown, setCountdown] = useState(5);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pts = useRef<number[]>([]);
-  const timer = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(true);
 
   const draw = () => {
+    if (typeof window === "undefined") return;
     const c = canvasRef.current; if (!c) return;
-    const ctx = c.getContext("2d")!; const W = c.width, H = c.height;
+    const ctx = c.getContext("2d"); if (!ctx) return;
+    const W = c.width, H = c.height;
     ctx.clearRect(0, 0, W, H);
     ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 1;
     for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, H * i / 4); ctx.lineTo(W, H * i / 4); ctx.stroke(); }
@@ -30,19 +32,42 @@ export default function Page() {
     ctx.beginPath(); ctx.strokeStyle = phase === "crashed" ? "#ff4444" : "#f0b429"; ctx.lineWidth = 3;
     pts.current.forEach((m, i) => { const x = (i / pts.current.length) * W; const y = H - ((m - 1) / (maxM - 1)) * H * 0.8 - H * 0.1; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
     ctx.stroke();
-    if (phase === "crashed") { ctx.fillStyle = "rgba(255,0,0,0.15)"; ctx.fillRect(0, 0, W, H); }
+  };
+
+  const stopTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
+
+  const cashOut = (m?: number) => {
+    stopTimer(); addWinnings(bet * (m || mult));
+    if (mountedRef.current) { setPhase("cashed"); playWin(); setHist(p => [(m || mult), ...p].slice(0, 20)); }
+    setTimeout(() => { if (mountedRef.current) start(); }, 3000);
+  };
+
+  const startFlying = (c: number) => {
+    if (!mountedRef.current) return;
+    playCoin(); let m = 1;
+    timerRef.current = setInterval(() => {
+      m += m * 0.015; const r = parseFloat(m.toFixed(2));
+      if (!mountedRef.current) { stopTimer(); return; }
+      setMult(r); pts.current.push(r); draw();
+      if (auto > 1 && r >= auto) cashOut(r);
+      if (r >= c) { stopTimer(); setPhase("crashed"); playCrash(); setHist(p => [c, ...p].slice(0, 20)); setTimeout(() => { if (mountedRef.current) start(); }, 3000); }
+    }, 100);
   };
 
   const start = () => {
+    if (!mountedRef.current) return;
     if (!placeBet(bet)) return;
     const c = crashPoint(); setCp(c); setMult(1); setPhase("betting"); pts.current = [];
     let cd = 5; setCountdown(cd);
-    timer.current = setInterval(() => { cd--; setCountdown(cd); if (cd <= 0) { clearInterval(timer.current); setPhase("flying"); playCoin(); let m = 1; timer.current = setInterval(() => { m += m * 0.015; const r = parseFloat(m.toFixed(2)); setMult(r); pts.current.push(r); draw(); if (auto > 1 && r >= auto) cashOut(r); if (r >= c) { clearInterval(timer.current); setPhase("crashed"); playCrash(); setHist(p => [c, ...p].slice(0, 20)); setTimeout(start, 3000); } }, 100); } }, 1000);
+    stopTimer();
+    timerRef.current = setInterval(() => {
+      cd--; if (!mountedRef.current) { stopTimer(); return; }
+      setCountdown(cd);
+      if (cd <= 0) { stopTimer(); setPhase("flying"); startFlying(c); }
+    }, 1000);
   };
 
-  const cashOut = (m?: number) => { clearInterval(timer.current); addWinnings(bet * (m || mult)); setPhase("cashed"); playWin(); setHist(p => [(m || mult), ...p].slice(0, 20)); setTimeout(start, 3000); };
-
-  useEffect(() => { start(); return () => clearInterval(timer.current); }, []);
+  useEffect(() => { mountedRef.current = true; start(); return () => { mountedRef.current = false; stopTimer(); }; }, []);
 
   return (
     <GameShell title="📈 Crash" history={hist.slice(0, 15).map((h, i) => <span key={i} className={"inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 " + (h < 2 ? "bg-red-500/20 text-red-400" : h < 5 ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400")}>{h}x</span>)}>

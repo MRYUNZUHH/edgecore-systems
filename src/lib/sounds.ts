@@ -1,18 +1,30 @@
 let ctx: AudioContext | null = null;
-function getCtx(): AudioContext {
-  if (!ctx) ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+function getCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  if (!ctx) {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) ctx = new AudioCtx();
+    } catch { return null; }
+  }
   return ctx;
 }
+
 function tone(freq: number, duration: number, type: OscillatorType = "sine", vol = 0.1) {
   const c = getCtx();
-  const o = c.createOscillator();
-  const g = c.createGain();
-  o.type = type; o.frequency.setValueAtTime(freq, c.currentTime);
-  g.gain.setValueAtTime(vol, c.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
-  o.connect(g); g.connect(c.destination);
-  o.start(c.currentTime); o.stop(c.currentTime + duration);
+  if (!c) return;
+  try {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, c.currentTime);
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+    o.connect(g); g.connect(c.destination);
+    o.start(c.currentTime); o.stop(c.currentTime + duration);
+  } catch {}
 }
+
 export function playClick() { tone(800, 0.05, "square", 0.05); }
 export function playCoin() { tone(880, 0.1, "sine", 0.08); setTimeout(() => tone(1100, 0.1, "sine", 0.08), 80); setTimeout(() => tone(1320, 0.15, "sine", 0.08), 160); }
 export function playCrash() { tone(200, 0.4, "sawtooth", 0.12); setTimeout(() => tone(100, 0.3, "sawtooth", 0.1), 200); }

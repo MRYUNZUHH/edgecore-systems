@@ -1,37 +1,38 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { useBalance } from "@/lib/useBalance";
+import { useState, useEffect, useRef } from "react";
 import GameShell from "@/components/layout/GameShell";
 import RulesModal from "@/components/ui/RulesModal";
 import { playBallTick, playWin } from "@/lib/sounds";
+import { placeBet, addWinnings } from "@/lib/gameBalance";
 
 const SLOTS = [[2,1.5,1,0.7,0.5,0.3,0.2,0.3,0.5,0.7,1,1.5,2],[10,5,2,1,0.5,0.2,0.1,0.2,0.5,1,2,5,10],[50,20,10,3,1,0.5,0.1,0.5,1,3,10,20,50]];
 
 export default function Page() {
-  const { balance, placeBet, addWinnings } = useBalance();
   const [bet, setBet] = useState(50);
   const [risk, setRisk] = useState(1);
   const [ball, setBall] = useState<{ x: number; y: number; col: number; active: boolean } | null>(null);
   const [hist, setHist] = useState<number[]>([]);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mountedRef = useRef(true);
+  const animRef = useRef<number>(0);
+
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; if (animRef.current) cancelAnimationFrame(animRef.current); }; }, []);
 
   const drop = () => {
     if (!placeBet(bet)) return;
     const col = Math.floor(Math.random() * 13);
-    let x = 50, y = 0, active = true, row = 0;
+    let x = 50, y = 0, row = 0;
     const animate = () => {
-      if (!active) return;
+      if (!mountedRef.current) return;
       row++;
       if (row >= 12) {
-        active = false;
-        const m = SLOTS[risk][col]; addWinnings(bet * m); setHist(p => [m, ...p].slice(0, 15));
-        playWin(); setBall(null); return;
+        const m = SLOTS[risk][col]; addWinnings(bet * m);
+        if (mountedRef.current) { setHist(p => [m, ...p].slice(0, 15)); setBall(null); }
+        playWin(); return;
       }
-      x += (Math.random() - 0.5) * 8;
-      y = (row / 12) * 100;
+      x += (Math.random() - 0.5) * 8; y = (row / 12) * 100;
+      if (mountedRef.current) setBall({ x, y, col, active: true });
       playBallTick();
-      setBall({ x, y, col, active: true });
-      requestAnimationFrame(() => setTimeout(animate, 150));
+      animRef.current = requestAnimationFrame(() => setTimeout(animate, 150));
     };
     setBall({ x, y, col, active: true });
     animate();
@@ -39,7 +40,7 @@ export default function Page() {
 
   return (
     <GameShell title="🟡 Plinko" history={hist.slice(0, 12).map((h, i) => <span key={i} className={"inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 " + (h >= 5 ? "bg-green-500/20 text-green-400" : h >= 1 ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400")}>{h}x</span>)}>
-      <RulesModal gameKey="plinko" title="Plinko" emoji="🟡" accentColor="#f0b429" rules={["Drop a ball from the top of the peg board","The ball bounces randomly through pegs","It lands in a multiplier slot at the bottom","Higher risk setting = wider range of multipliers","Each drop is independent - no memory of past drops","Your payout = bet × the slot multiplier the ball lands in"]} />
+      <RulesModal gameKey="plinko" title="Plinko" emoji="🟡" accentColor="#f0b429" rules={["Drop a ball from the top of the peg board","The ball bounces randomly through pegs","It lands in a multiplier slot at the bottom","Higher risk setting = wider range of multipliers","Each drop is independent","Your payout = bet × the slot multiplier"]} />
       <div className="bg-[#0f1520] border border-[#ffffff0f] rounded-xl p-4">
         <div className="relative h-72 bg-[#0a0a0f] rounded-lg overflow-hidden mb-4">
           {Array.from({ length: 12 }).map((_, r) => <div key={r} className="absolute flex justify-center w-full" style={{ top: ((r + 1) / 13 * 85) + "%" }}>{Array.from({ length: r + 2 }).map((_, p) => <div key={p} className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-5" />)}</div>)}
