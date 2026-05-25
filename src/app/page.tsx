@@ -5,18 +5,41 @@ import { useBalance } from "@/lib/useBalance";
 import LiveFeed from "@/components/ui/LiveFeed";
 import MobileNav from "@/components/layout/MobileNav";
 
+const JACKPOT_KEY = "ec_jackpot";
+const BASE_JACKPOT = 847000;
+
 const games = [
-  {n:"Aviator",e:"✈️",h:"/casino/aviator",hot:true},{n:"Crash",e:"📈",h:"/casino/crash",hot:true},
-  {n:"Mines",e:"💣",h:"/casino/mines"},{n:"Plinko",e:"🟡",h:"/casino/plinko",new:true},
-  {n:"Dice",e:"🎲",h:"/casino/dice"},{n:"Roulette",e:"🎡",h:"/casino/roulette"},
+  {n:"Aviator",e:"✈️",h:"/casino/aviator",hot:true},
+  {n:"Crash",e:"📈",h:"/casino/crash",hot:true},
+  {n:"Mines",e:"💣",h:"/casino/mines"},
+  {n:"Plinko",e:"🟡",h:"/casino/plinko",new:true},
+  {n:"Dice",e:"🎲",h:"/casino/dice"},
+  {n:"Roulette",e:"🎡",h:"/casino/roulette"},
 ];
 
 export default function Home() {
   const { isLoggedIn, username } = useBalance();
-  const [jackpot, setJackpot] = useState(850000);
+  const [jackpot, setJackpot] = useState(BASE_JACKPOT);
 
   useEffect(() => {
-    const jp = setInterval(() => setJackpot(p => p + Math.random() * 100 + 50), 2000);
+    // Load persisted jackpot or initialize it
+    const stored = localStorage.getItem(JACKPOT_KEY);
+    if (stored) {
+      setJackpot(parseFloat(stored));
+    } else {
+      localStorage.setItem(JACKPOT_KEY, BASE_JACKPOT.toString());
+    }
+
+    // Slowly increment the jackpot every 2 seconds
+    const jp = setInterval(() => {
+      setJackpot(prev => {
+        const increment = Math.random() * 80 + 20;
+        const next = prev + increment;
+        localStorage.setItem(JACKPOT_KEY, next.toString());
+        return next;
+      });
+    }, 2000);
+
     return () => clearInterval(jp);
   }, []);
 
@@ -36,7 +59,8 @@ export default function Home() {
             </div>
             <div className="bg-[#0f1520] border border-[#ffffff0f] rounded-2xl p-8 text-center">
               <p className="text-sm text-gray-400 mb-2">🔥 LIVE JACKPOT</p>
-              <p className="font-heading text-5xl font-bold text-[#f0b429]">${jackpot.toLocaleString()}</p>
+              <p className="font-heading text-5xl font-bold text-[#f0b429] transition-all">${jackpot.toLocaleString('en-US', {maximumFractionDigits:2})}</p>
+              <p className="text-xs text-gray-500 mt-2">Growing in real-time · Never resets</p>
               <Link href="/casino/crash" className="bg-[#f0b429] text-black font-bold w-full mt-6 py-3 rounded-lg no-underline block">Play Crash Now →</Link>
             </div>
           </div>
