@@ -1,7 +1,14 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 
-interface User { username: string; balance: number; loggedIn: boolean; justLoggedIn?: boolean; }
+export interface User {
+  username: string; email: string; phone: string;
+  avatar: string; balance: number; realBalance: number;
+  loggedIn: boolean; justLoggedIn?: boolean;
+  accountMode: "demo" | "real";
+}
+
+const DEFAULT_AVATARS = ["🦊","🐼","🐨","🦄","😎","🤠","👾","🐸","🤑","👑","💀","🎃","🤖","👽","🐶"];
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -25,30 +32,54 @@ export function useAuth() {
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  const login = useCallback((username: string) => {
-    const u: User = { username, balance: 10000, loggedIn: true, justLoggedIn: true };
-    localStorage.setItem("edgecore_user", JSON.stringify(u));
-    setUser(u);
+  const save = (u: User) => { localStorage.setItem("edgecore_user", JSON.stringify(u)); setUser(u); };
+
+  const login = useCallback((username: string, email?: string, phone?: string) => {
+    const avatar = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)];
+    const u: User = { username, email: email || "", phone: phone || "", avatar, balance: 10000, realBalance: 0, loggedIn: true, justLoggedIn: true, accountMode: "demo" };
+    save(u);
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("edgecore_user");
-    setUser(null);
-  }, []);
+  const logout = useCallback(() => { localStorage.removeItem("edgecore_user"); setUser(null); }, []);
 
-  const updateBalance = useCallback((n: number) => {
+  const switchMode = useCallback((mode: "demo" | "real") => {
     if (!user) return;
-    const u = { ...user, balance: n };
-    localStorage.setItem("edgecore_user", JSON.stringify(u));
-    setUser(u);
+    save({ ...user, accountMode: mode });
+  }, [user]);
+
+  const updateBalance = useCallback((delta: number) => {
+    if (!user) return;
+    if (user.accountMode === "demo") {
+      save({ ...user, balance: Math.max(0, user.balance + delta) });
+    } else {
+      save({ ...user, realBalance: Math.max(0, user.realBalance + delta) });
+    }
+  }, [user]);
+
+  const getBalance = useCallback(() => {
+    if (!user) return 0;
+    return user.accountMode === "demo" ? user.balance : user.realBalance;
+  }, [user]);
+
+  const resetDemo = useCallback(() => {
+    if (!user) return;
+    save({ ...user, balance: 10000 });
+  }, [user]);
+
+  const updateAvatar = useCallback((avatar: string) => {
+    if (!user) return;
+    save({ ...user, avatar });
+  }, [user]);
+
+  const updateProfile = useCallback((data: { username?: string; email?: string; phone?: string }) => {
+    if (!user) return;
+    save({ ...user, ...data });
   }, [user]);
 
   const clearJustLoggedIn = useCallback(() => {
     if (!user?.justLoggedIn) return;
-    const u = { ...user, justLoggedIn: false };
-    localStorage.setItem("edgecore_user", JSON.stringify(u));
-    setUser(u);
+    save({ ...user, justLoggedIn: false });
   }, [user]);
 
-  return { user, isLoggedIn: !!user?.loggedIn, loading, login, logout, updateBalance, clearJustLoggedIn };
+  return { user, isLoggedIn: !!user?.loggedIn, loading, login, logout, switchMode, updateBalance, getBalance, resetDemo, updateAvatar, updateProfile, clearJustLoggedIn, DEFAULT_AVATARS };
 }
