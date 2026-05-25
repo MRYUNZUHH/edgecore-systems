@@ -9,8 +9,8 @@ export default function Navbar() {
     <header className="border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 no-underline shrink-0">
-            <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center text-black font-bold text-base">â—†</div>
+          <Link href="/" className="flex items-center gap-2 no-underline shrink-0"><Logo size="sm" />
+            
             
           </Link>
           <nav className="hidden lg:flex items-center gap-5 text-sm">

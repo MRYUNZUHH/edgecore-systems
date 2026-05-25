@@ -1,6 +1,26 @@
 "use client";
 import { useEffect, useRef } from "react";
 
+interface Particle {
+  x: number; y: number; r: number;
+  vx: number; vy: number;
+  col: string; alpha: number;
+  pulse: number; pulseSpeed: number;
+}
+
+interface Suit {
+  x: number; y: number;
+  sym: string; size: number; alpha: number;
+  vx: number; vy: number;
+  rot: number; rotSpeed: number;
+}
+
+interface LightRay {
+  x: number; y: number; len: number;
+  angle: number; speed: number;
+  col: string; life: number;
+}
+
 export default function BackgroundCanvas() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -9,6 +29,7 @@ export default function BackgroundCanvas() {
     const ctx = canvas.getContext("2d")!;
     let animId: number;
     let frame = 0;
+    let time = 0;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -17,93 +38,143 @@ export default function BackgroundCanvas() {
     resize();
     window.addEventListener("resize", resize);
 
-    const particles = Array.from({ length: 80 }, () => ({
+    // Dynamic gradient mesh background
+    const drawGradientMesh = () => {
+      const t = time * 0.0003;
+      // Layer 1: Deep purple/blue base
+      const g1 = ctx.createRadialGradient(
+        canvas.width * 0.3 + Math.sin(t * 0.7) * 100, canvas.height * 0.2 + Math.cos(t * 0.5) * 80,
+        0,
+        canvas.width * 0.3, canvas.height * 0.2,
+        canvas.width * 0.9
+      );
+      g1.addColorStop(0, 'rgba(139, 92, 246, 0.12)');
+      g1.addColorStop(0.5, 'rgba(6, 182, 212, 0.06)');
+      g1.addColorStop(1, 'rgba(10, 14, 26, 0)');
+      ctx.fillStyle = g1;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Layer 2: Gold/warm accent
+      const g2 = ctx.createRadialGradient(
+        canvas.width * 0.7 + Math.cos(t * 0.6) * 120, canvas.height * 0.7 + Math.sin(t * 0.8) * 90,
+        0,
+        canvas.width * 0.7, canvas.height * 0.7,
+        canvas.width * 0.7
+      );
+      g2.addColorStop(0, 'rgba(245, 158, 11, 0.08)');
+      g2.addColorStop(1, 'rgba(10, 14, 26, 0)');
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Layer 3: Cyan accent
+      const g3 = ctx.createRadialGradient(
+        canvas.width * 0.5 + Math.sin(t * 0.9) * 150, canvas.height * 0.5 + Math.cos(t * 0.7) * 100,
+        0,
+        canvas.width * 0.5, canvas.height * 0.5,
+        canvas.width * 0.8
+      );
+      g3.addColorStop(0, 'rgba(6, 182, 212, 0.05)');
+      g3.addColorStop(1, 'rgba(10, 14, 26, 0)');
+      ctx.fillStyle = g3;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    };
+
+    // Particles
+    const particles: Particle[] = Array.from({ length: 90 }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.5 + 0.3,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      col: ["rgba(245,200,66,", "rgba(77,159,255,", "rgba(168,85,247,"][Math.floor(Math.random() * 3)],
-      alpha: Math.random() * 0.45 + 0.1,
+      r: Math.random() * 2 + 0.3,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      col: ["rgba(139,92,246,", "rgba(6,182,212,", "rgba(245,158,11,", "rgba(245,200,66,"][Math.floor(Math.random() * 4)],
+      alpha: Math.random() * 0.5 + 0.08,
       pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: Math.random() * 0.025 + 0.008,
+      pulseSpeed: Math.random() * 0.03 + 0.006,
     }));
 
-    const suits = Array.from({ length: 16 }, () => ({
+    // Card suits
+    const suits: Suit[] = Array.from({ length: 20 }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      sym: ["♠", "♥", "♦", "♣", "⬡", "✦"][Math.floor(Math.random() * 6)],
-      size: Math.random() * 14 + 7,
-      alpha: Math.random() * 0.04 + 0.015,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.1,
+      sym: ["♠", "♥", "♦", "♣", "⬡", "✦", "◆"][Math.floor(Math.random() * 7)],
+      size: Math.random() * 16 + 8,
+      alpha: Math.random() * 0.045 + 0.012,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.12,
       rot: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.005,
+      rotSpeed: (Math.random() - 0.5) * 0.006,
     }));
 
-    const lines: { x: number; y: number; len: number; angle: number; speed: number; col: string; life: number }[] = [];
-
-    const spawnInterval = setInterval(() => {
-      lines.push({
+    // Light rays
+    const rays: LightRay[] = [];
+    const rayInterval = setInterval(() => {
+      rays.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        len: Math.random() * 100 + 50,
-        angle: (Math.random() - 0.5) * 0.3,
-        speed: Math.random() * 2.5 + 1,
-        col: Math.random() < 0.65 ? "rgba(245,200,66," : "rgba(77,159,255,",
+        len: Math.random() * 120 + 60,
+        angle: (Math.random() - 0.5) * 0.4,
+        speed: Math.random() * 3 + 1,
+        col: Math.random() < 0.5 ? "rgba(139,92,246," : Math.random() < 0.5 ? "rgba(6,182,212," : "rgba(245,158,11,",
         life: 1,
       });
-    }, 550);
+    }, 600);
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      time = performance.now();
       frame++;
 
+      // Draw gradient mesh
+      drawGradientMesh();
+
+      // Particles
       for (const p of particles) {
         p.x += p.vx; p.y += p.vy;
         p.pulse += p.pulseSpeed;
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-        const a = p.alpha * (0.55 + 0.45 * Math.sin(p.pulse));
+        if (p.x < -10) p.x = canvas.width + 10;
+        if (p.x > canvas.width + 10) p.x = -10;
+        if (p.y < -10) p.y = canvas.height + 10;
+        if (p.y > canvas.height + 10) p.y = -10;
+        const a = p.alpha * (0.5 + 0.5 * Math.sin(p.pulse));
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = p.col + a + ")";
         ctx.fill();
       }
 
+      // Suit symbols
       for (const s of suits) {
         s.x += s.vx; s.y += s.vy; s.rot += s.rotSpeed;
-        if (s.x < -30) s.x = canvas.width + 30;
-        if (s.x > canvas.width + 30) s.x = -30;
-        if (s.y < -30) s.y = canvas.height + 30;
-        if (s.y > canvas.height + 30) s.y = -30;
+        if (s.x < -40) s.x = canvas.width + 40;
+        if (s.x > canvas.width + 40) s.x = -40;
+        if (s.y < -40) s.y = canvas.height + 40;
+        if (s.y > canvas.height + 40) s.y = -40;
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.rot);
         ctx.font = `${s.size}px serif`;
-        ctx.fillStyle = `rgba(245,200,66,${s.alpha})`;
+        ctx.fillStyle = `rgba(139,92,246,${s.alpha})`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(s.sym, 0, 0);
         ctx.restore();
       }
 
-      for (let i = lines.length - 1; i >= 0; i--) {
-        const l = lines[i];
+      // Light rays
+      for (let i = rays.length - 1; i >= 0; i--) {
+        const l = rays[i];
         l.x += l.speed * Math.cos(l.angle + Math.PI);
         l.y += l.speed * Math.sin(l.angle);
-        l.life -= 0.018;
-        if (l.life <= 0) { lines.splice(i, 1); continue; }
+        l.life -= 0.02;
+        if (l.life <= 0) { rays.splice(i, 1); continue; }
         ctx.save();
         ctx.translate(l.x, l.y);
         ctx.rotate(l.angle);
         const grad = ctx.createLinearGradient(0, 0, -l.len, 0);
-        grad.addColorStop(0, l.col + (0.55 * l.life) + ")");
+        grad.addColorStop(0, l.col + (0.6 * l.life) + ")");
         grad.addColorStop(1, l.col + "0)");
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 0.9;
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(-l.len, 0);
@@ -111,12 +182,18 @@ export default function BackgroundCanvas() {
         ctx.restore();
       }
 
-      if (frame % 3 === 0 && Math.random() > 0.7) {
+      // Grid node pulses
+      if (frame % 4 === 0 && Math.random() > 0.65) {
         const gx = Math.floor(Math.random() * (canvas.width / 60)) * 60 + 30;
         const gy = Math.floor(Math.random() * (canvas.height / 60)) * 60 + 30;
+        const pulse = 0.3 + 0.2 * Math.sin(time * 0.003);
         ctx.beginPath();
-        ctx.arc(gx, gy, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(245,200,66,0.3)";
+        ctx.arc(gx, gy, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139,92,246,${pulse})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(gx, gy, 6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139,92,246,${pulse * 0.3})`;
         ctx.fill();
       }
 
@@ -126,7 +203,7 @@ export default function BackgroundCanvas() {
 
     return () => {
       cancelAnimationFrame(animId);
-      clearInterval(spawnInterval);
+      clearInterval(rayInterval);
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -134,7 +211,14 @@ export default function BackgroundCanvas() {
   return (
     <canvas
       ref={ref}
-      style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none", display: "block" }}
+      style={{
+        position: "fixed",
+        top: 0, left: 0,
+        width: "100vw", height: "100vh",
+        zIndex: 0,
+        pointerEvents: "none",
+        display: "block",
+      }}
     />
   );
 }
