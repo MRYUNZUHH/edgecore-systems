@@ -1,18 +1,17 @@
-export default function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const s = size === 'sm' ? 28 : size === 'lg' ? 44 : 34;
-  const fs = size === 'sm' ? 12 : size === 'lg' ? 18 : 15;
+"use client";
+export default function Logo() {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap: 10 }}>
-      <svg width={s} height={s} viewBox="0 0 34 34">
-        <polygon points="17,2 29,9 29,25 17,32 5,25 5,9" fill="none" stroke="#f5c842" strokeWidth="2"/>
-        <polygon points="17,7 25,12 25,22 17,27 9,22 9,12" fill="#f5c842" fillOpacity="0.08"/>
-        <text x="17" y="22" textAnchor="middle" fontFamily="Georgia,serif" fontSize={fs} fontWeight="700" fill="#f5c842">E</text>
-        <line x1="17" y1="2" x2="17" y2="7" stroke="#f5c842" strokeWidth="2"/>
-        <line x1="17" y1="27" x2="17" y2="32" stroke="#f5c842" strokeWidth="2"/>
+    <a href="/" style={{ display:'flex', alignItems:'center', gap:'10px', textDecoration:'none' }}>
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="18,2 31,9.5 31,26.5 18,34 5,26.5 5,9.5" fill="none" stroke="#f5c842" strokeWidth="2"/>
+        <polygon points="18,7 27,12.5 27,23.5 18,29 9,23.5 9,12.5" fill="#f5c842" fillOpacity="0.08"/>
+        <line x1="18" y1="2"  x2="18" y2="7"  stroke="#f5c842" strokeWidth="2.5" strokeLinecap="round"/>
+        <line x1="18" y1="29" x2="18" y2="34" stroke="#f5c842" strokeWidth="2.5" strokeLinecap="round"/>
+        <text x="18" y="23" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif" fontSize="17" fontWeight="700" fill="#f5c842">E</text>
       </svg>
-      <span style={{ fontFamily:'Georgia,serif', fontWeight:700, fontSize: size==='sm'?16:size==='lg'?26:20, color:'#e8ecf5', letterSpacing:1 }}>
-        EDGE<span style={{ color:'#f5c842' }}>CORE</span>
+      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: '20px', fontWeight: '700', letterSpacing: '1.5px', color: '#e8ecf5', lineHeight: 1 }}>
+        EDGE<span style={{ color: '#f5c842' }}>CORE</span>
       </span>
-    </div>
+    </a>
   );
 }

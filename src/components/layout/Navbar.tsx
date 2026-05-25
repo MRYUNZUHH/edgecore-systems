@@ -11,7 +11,7 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 no-underline shrink-0">
             <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center text-black font-bold text-base">â—†</div>
-            <span className="font-heading font-bold text-gold text-xl tracking-wide">EDGECORE</span>
+            
           </Link>
           <nav className="hidden lg:flex items-center gap-5 text-sm">
             <Link href="/" className="text-muted hover:text-white no-underline transition">Home</Link>

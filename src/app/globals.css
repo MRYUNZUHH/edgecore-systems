@@ -41,5 +41,16 @@ body {
   background-image:
     linear-gradient(rgba(30,45,74,0.3) 1px, transparent 1px),
     linear-gradient(90deg, rgba(30,45,74,0.3) 1px, transparent 1px);
-  background-size: 60px 60px;
+  
+}
+html, body {
+  background: #0a0e1a !important;
+  min-height: 100vh;
+}
+body {
+  background-image:
+    linear-gradient(rgba(30,45,74,0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30,45,74,0.28) 1px, transparent 1px) !important;
+  background-size: 60px 60px !important;
+  background-attachment: fixed !important;
 }

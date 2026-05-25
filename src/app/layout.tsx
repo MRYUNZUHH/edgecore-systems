@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
+      <body>
         <BackgroundCanvas />
-        <Navbar />
-        <main style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <Navbar />
           {children}
-        </main>
+        </div>
       </body>
     </html>
   );
