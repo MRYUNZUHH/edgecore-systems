@@ -1,26 +1,35 @@
+import Link from "next/link";
 export default function Home() {
   return (
-    <div className="space-y-8 py-4">
-      <div className="text-center space-y-4 py-12 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl border border-gray-800">
-        <h1 className="text-4xl lg:text-5xl font-bold">Welcome to EdgeCore</h1>
-        <p className="text-xl text-yellow-500 font-bold">Premium Casino Experience</p>
-        <p className="text-gray-400">10,000 demo credits. No deposit needed.</p>
-        <div className="flex gap-3 justify-center">
-          <a href="/auth/login" className="inline-block px-8 py-3 bg-yellow-500 text-black font-bold rounded-lg text-lg">Login to Play</a>
-          <a href="/casino" className="inline-block px-8 py-3 border border-yellow-500/30 text-yellow-500 font-bold rounded-lg text-lg">Browse Games</a>
+    <div className="min-h-screen">
+      <header className="border-b border-subtle bg-[#080b12]/95 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 no-underline"><span className="w-8 h-8 bg-[#f5c842] rounded-lg flex items-center justify-center text-black font-bold">◆</span><span className="font-bold text-gold text-lg">EDGECORE</span></Link>
+          <div className="flex items-center gap-4 text-sm">
+            <Link href="/casino" className="text-muted hover:text-white no-underline">Casino</Link>
+            <Link href="/live-casino" className="text-muted hover:text-white no-underline">Live</Link>
+            <Link href="/predictions" className="text-muted hover:text-white no-underline">Predictions</Link>
+            <Link href="/wallet" className="text-muted hover:text-white no-underline">Wallet</Link>
+            <Link href="/auth/login" className="btn-gold text-sm px-4 py-2 no-underline">Login</Link>
+          </div>
         </div>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[
-          {name:"Aviator",emoji:"✈️"},{name:"Crash",emoji:"📈"},{name:"Mines",emoji:"💣"},
-          {name:"Blackjack",emoji:"🃏"},{name:"Roulette",emoji:"🎡"},{name:"Starburst",emoji:"⭐"}
-        ].map(g=>(
-          <a key={g.name} href="/casino" className="block bg-gray-900 border border-gray-800 rounded-2xl p-5 text-center hover:border-yellow-500/30 transition no-underline">
-            <div className="text-4xl mb-3">{g.emoji}</div>
-            <h3 className="text-white font-bold">{g.name}</h3>
-          </a>
-        ))}
-      </div>
+      </header>
+      <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+        <div className="text-center space-y-6 py-16">
+          <h1 className="text-5xl lg:text-6xl font-bold">Welcome to <span className="text-gold">EdgeCore</span></h1>
+          <p className="text-xl text-muted">Premium Casino Experience · 10,000 Demo Credits Free</p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/auth/login" className="btn-gold text-lg px-8 py-4 no-underline">🎰 Play Now</Link>
+            <Link href="/casino" className="border border-[#f5c842]/30 text-gold font-bold px-8 py-4 rounded-lg text-lg no-underline hover:bg-[#f5c842]/10">Browse Games</Link>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+          {[{n:"Aviator",e:"✈️"},{n:"Crash",e:"📈"},{n:"Mines",e:"💣"},{n:"Blackjack",e:"🃏"},{n:"Roulette",e:"🎡"},{n:"Starburst",e:"⭐"}].map(g=>(
+            <Link key={g.n} href="/casino" className="card p-5 text-center no-underline hover:border-[#f5c842]/30 transition block"><div className="text-4xl mb-3">{g.e}</div><h3 className="text-white font-bold">{g.n}</h3></Link>
+          ))}
+        </div>
+      </main>
+      <footer className="border-t border-subtle py-4 px-4 text-center text-xs text-muted">© 2026 EdgeCore. Demo platform. 18+ only.</footer>
     </div>
   );
 }
