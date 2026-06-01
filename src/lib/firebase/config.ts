@@ -1,4 +1,4 @@
-﻿import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -35,7 +35,7 @@ export const registerWithEmail = async (email: string, password: string, usernam
     await setDoc(doc(db, 'users', result.user.uid), {
       username,
       email,
-      avatar: '😎',
+      avatar: '??',
       balance: 10000,
       vipTier: 0,
       totalBets: 0,
@@ -60,7 +60,7 @@ export const loginWithGoogle = async () => {
       await setDoc(doc(db, 'users', result.user.uid), {
         username: result.user.displayName || 'Player',
         email: result.user.email,
-        avatar: '😎',
+        avatar: '??',
         balance: 10000,
         vipTier: 0,
         totalBets: 0,

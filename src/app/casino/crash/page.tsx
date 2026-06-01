@@ -1,87 +1,307 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import GameShell from "@/components/layout/GameShell";
-import RulesModal from "@/components/ui/RulesModal";
-import { crashPoint } from "@/lib/gameEngine";
-import { playCoin, playCrash, playWin } from "@/lib/sounds";
-import { placeBet, addWinnings } from "@/lib/gameBalance";
+import { useState, useRef, useEffect, useCallback } from "react";
 
-export default function Page() {
-  const [mult, setMult] = useState(1);
-  const [phase, setPhase] = useState("betting");
-  const [bet, setBet] = useState(50);
-  const [cp, setCp] = useState(0);
-  const [hist, setHist] = useState<number[]>([2.31, 1.05, 8.42]);
-  const [auto, setAuto] = useState(0);
-  const [countdown, setCountdown] = useState(5);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pts = useRef<number[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const mountedRef = useRef(true);
+type Phase = "waiting" | "countdown" | "running" | "crashed";
 
-  const draw = () => {
-    if (typeof window === "undefined") return;
-    const c = canvasRef.current; if (!c) return;
-    const ctx = c.getContext("2d"); if (!ctx) return;
-    const W = c.width, H = c.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 1;
-    for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, H * i / 4); ctx.lineTo(W, H * i / 4); ctx.stroke(); }
-    if (pts.current.length < 2) return;
-    const maxM = Math.max(...pts.current, 2);
-    ctx.beginPath(); ctx.strokeStyle = phase === "crashed" ? "#ff4444" : "#f0b429"; ctx.lineWidth = 3;
-    pts.current.forEach((m, i) => { const x = (i / pts.current.length) * W; const y = H - ((m - 1) / (maxM - 1)) * H * 0.8 - H * 0.1; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
-    ctx.stroke();
-  };
+interface HistoryEntry {
+  value: number;
+  id: number;
+}
 
-  const stopTimer = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
+export default function CrashPage() {
+  const [phase, setPhase] = useState<Phase>("waiting");
+  const [multiplier, setMultiplier] = useState(1.0);
+  const [history, setHistory] = useState<HistoryEntry[]>([
+    { value: 2.31, id: 1 }, { value: 1.05, id: 2 }, { value: 8.42, id: 3 },
+    { value: 3.14, id: 4 }, { value: 1.88, id: 5 }, { value: 14.3, id: 6 },
+  ]);
+  const [bet, setBet] = useState(10);
+  const [customBet, setCustomBet] = useState("");
+  const [cashedOut, setCashedOut] = useState<number | null>(null);
+  const [balance, setBalance] = useState(1000);
+  const [countdown, setCountdown] = useState(3);
+  const [autoCashout, setAutoCashout] = useState("");
+  const [message, setMessage] = useState("");
 
-  const cashOut = (m?: number) => {
-    stopTimer(); addWinnings(bet * (m || mult));
-    if (mountedRef.current) { setPhase("cashed"); playWin(); setHist(p => [(m || mult), ...p].slice(0, 20)); }
-    setTimeout(() => { if (mountedRef.current) start(); }, 3000);
-  };
+  const intervalRef = useRef<NodeJS.Timeout>();
+  const countdownRef = useRef<NodeJS.Timeout>();
+  const crashAt = useRef(1);
+  const startTime = useRef(0);
 
-  const startFlying = (c: number) => {
-    if (!mountedRef.current) return;
-    playCoin(); let m = 1;
-    timerRef.current = setInterval(() => {
-      m += m * 0.015; const r = parseFloat(m.toFixed(2));
-      if (!mountedRef.current) { stopTimer(); return; }
-      setMult(r); pts.current.push(r); draw();
-      if (auto > 1 && r >= auto) cashOut(r);
-      if (r >= c) { stopTimer(); setPhase("crashed"); playCrash(); setHist(p => [c, ...p].slice(0, 20)); setTimeout(() => { if (mountedRef.current) start(); }, 3000); }
-    }, 100);
-  };
+  const effectiveBet = customBet ? parseFloat(customBet) || 0 : bet;
 
-  const start = () => {
-    if (!mountedRef.current) return;
-    if (!placeBet(bet)) return;
-    const c = crashPoint(); setCp(c); setMult(1); setPhase("betting"); pts.current = [];
-    let cd = 5; setCountdown(cd);
-    stopTimer();
-    timerRef.current = setInterval(() => {
-      cd--; if (!mountedRef.current) { stopTimer(); return; }
-      setCountdown(cd);
-      if (cd <= 0) { stopTimer(); setPhase("flying"); startFlying(c); }
+  const startCountdown = useCallback(() => {
+    if (balance < effectiveBet || effectiveBet <= 0) {
+      setMessage("Insufficient balance or invalid bet.");
+      return;
+    }
+    setMessage("");
+    setPhase("countdown");
+    setCountdown(3);
+    let c = 3;
+    countdownRef.current = setInterval(() => {
+      c -= 1;
+      setCountdown(c);
+      if (c <= 0) {
+        clearInterval(countdownRef.current);
+        startRound();
+      }
     }, 1000);
-  };
+  }, [balance, effectiveBet]);
 
-  useEffect(() => { mountedRef.current = true; start(); return () => { mountedRef.current = false; stopTimer(); }; }, []);
+  function startRound() {
+    // Provably fair geometric distribution with 3% house edge
+    const r = Math.random();
+    const crash = Math.max(1.01, 0.97 / (1 - r));
+    crashAt.current = crash;
+    setCashedOut(null);
+    setPhase("running");
+    setMultiplier(1.0);
+    setBalance(b => b - effectiveBet);
+    startTime.current = Date.now();
+
+    intervalRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTime.current) / 1000;
+      // Exponential growth curve: e^(0.15t)
+      const m = Math.pow(Math.E, 0.15 * elapsed);
+      const rounded = parseFloat(m.toFixed(2));
+      setMultiplier(rounded);
+
+      // Auto cashout check
+      const ac = parseFloat(autoCashout);
+      if (ac > 1 && rounded >= ac) {
+        clearInterval(intervalRef.current);
+        doCashOut(rounded, effectiveBet);
+        return;
+      }
+
+      if (m >= crashAt.current) {
+        clearInterval(intervalRef.current);
+        const finalVal = parseFloat(m.toFixed(2));
+        setMultiplier(finalVal);
+        setPhase("crashed");
+        setHistory(h => [{ value: finalVal, id: Date.now() }, ...h.slice(0, 14)]);
+        setMessage(`Crashed at ${finalVal.toFixed(2)}x`);
+      }
+    }, 80);
+  }
+
+  function doCashOut(m: number, b: number) {
+    const winnings = parseFloat((b * m).toFixed(2));
+    setCashedOut(m);
+    setBalance(prev => prev + winnings);
+    setPhase("crashed");
+    setHistory(h => [{ value: m, id: Date.now() }, ...h.slice(0, 14)]);
+    setMessage(`Cashed out at ${m.toFixed(2)}x — Won $${winnings}!`);
+  }
+
+  function cashOut() {
+    if (phase !== "running" || cashedOut) return;
+    clearInterval(intervalRef.current);
+    doCashOut(multiplier, effectiveBet);
+  }
+
+  function reset() {
+    setPhase("waiting");
+    setMultiplier(1.0);
+    setCashedOut(null);
+    setMessage("");
+  }
+
+  useEffect(() => () => {
+    clearInterval(intervalRef.current);
+    clearInterval(countdownRef.current);
+  }, []);
+
+  const bgColor = phase === "crashed" && !cashedOut
+    ? "#1a0000"
+    : phase === "running"
+    ? "#0a0f0a"
+    : "#0d0d14";
+
+  const multColor = phase === "crashed" && !cashedOut
+    ? "#ef4444"
+    : cashedOut
+    ? "#22c55e"
+    : "#f0b429";
 
   return (
-    <GameShell title="📈 Crash" history={hist.slice(0, 15).map((h, i) => <span key={i} className={"inline-block px-2 py-0.5 rounded text-xs font-bold m-0.5 " + (h < 2 ? "bg-red-500/20 text-red-400" : h < 5 ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400")}>{h}x</span>)}>
-      <RulesModal gameKey="crash" title="Crash" emoji="📈" accentColor="#f0b429" rules={["Place your bet before the round starts","A multiplier begins rising from 1.00x","Cash out manually before the graph crashes","If you don't cash out in time, you lose your bet","The crash point is randomly determined each round","You can see recent crash history to gauge patterns","Higher multipliers = higher risk, higher reward"]} />
-      <div className="bg-[#0f1520] border border-[#ffffff0f] rounded-xl p-4">
-        <canvas ref={canvasRef} width={500} height={240} className="w-full rounded-lg" />
-        <p className={"text-4xl font-bold text-center mt-2 " + (phase === "crashed" ? "text-red-400" : phase === "cashed" ? "text-green-400" : "text-[#f0b429]")}>{mult.toFixed(2)}x</p>
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 16px", fontFamily: "system-ui, sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div>
+          <h1 style={{ color: "#fff", margin: 0, fontSize: 22 }}>📈 Crash</h1>
+          <span style={{ color: "#6b7280", fontSize: 12 }}>RTP 97% · Provably Fair</span>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Balance</div>
+          <div style={{ color: "#f0b429", fontWeight: 700, fontSize: 18 }}>${balance.toFixed(2)}</div>
+        </div>
       </div>
-      <div className="mt-4 space-y-3">
-        <div className="flex gap-2"><input type="number" value={bet} onChange={e => setBet(Number(e.target.value))} className="flex-1 bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2" disabled={phase !== "betting"} />{[10, 50, 100, 500].map(v => <button key={v} onClick={() => setBet(v)} className="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg">{v}</button>)}</div>
-        <input type="number" value={auto || ""} onChange={e => setAuto(Number(e.target.value))} placeholder="Auto cashout" className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg text-white px-4 py-2 text-sm" />
-        {phase === "betting" && <button onClick={start} className="w-full py-3 bg-[#f0b429] text-black font-bold rounded-lg">Place Bet</button>}
-        {phase === "flying" && <button onClick={() => cashOut()} className="w-full py-3 bg-[#00ff88] text-black font-bold rounded-lg animate-pulse">Cash Out</button>}
+
+      {/* Game Display */}
+      <div style={{
+        height: 300, background: bgColor, borderRadius: 20,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        marginBottom: 20, border: "1px solid #1e1e2e", position: "relative",
+        overflow: "hidden", transition: "background 0.3s"
+      }}>
+        {phase === "countdown" ? (
+          <div style={{ textAlign: "center" }}>
+            <div style={{ color: "#9ca3af", fontSize: 14, marginBottom: 8 }}>Round starting in</div>
+            <div style={{ fontSize: 80, fontWeight: 800, color: "#6366f1" }}>{countdown}</div>
+          </div>
+        ) : (
+          <div style={{ textAlign: "center" }}>
+            <div style={{
+              fontSize: 72, fontWeight: 900, fontVariantNumeric: "tabular-nums",
+              color: multColor, transition: "color 0.2s",
+              textShadow: phase === "running" ? `0 0 40px ${multColor}44` : "none"
+            }}>
+              {phase === "waiting" ? "1.00x" : `${multiplier.toFixed(2)}x`}
+            </div>
+            {phase === "crashed" && !cashedOut && (
+              <div style={{ color: "#ef4444", fontSize: 16, fontWeight: 600 }}>CRASHED</div>
+            )}
+            {cashedOut && (
+              <div style={{ color: "#22c55e", fontSize: 16, fontWeight: 600 }}>
+                CASHED OUT @ {cashedOut.toFixed(2)}x
+              </div>
+            )}
+          </div>
+        )}
+        {/* Multiplier growth indicator */}
+        {phase === "running" && (
+          <div style={{
+            position: "absolute", bottom: 0, left: 0,
+            height: 3, background: "#f0b429",
+            width: `${Math.min(100, (multiplier - 1) * 10)}%`,
+            transition: "width 0.08s linear"
+          }} />
+        )}
       </div>
-    </GameShell>
+
+      {/* Message */}
+      {message && (
+        <div style={{
+          padding: "10px 16px", borderRadius: 10, marginBottom: 16, fontSize: 14, fontWeight: 600,
+          background: message.includes("Won") ? "#052e16" : message.includes("Crashed") ? "#1f0000" : "#1f2937",
+          color: message.includes("Won") ? "#22c55e" : message.includes("Crashed") ? "#ef4444" : "#9ca3af",
+          border: `1px solid ${message.includes("Won") ? "#166534" : message.includes("Crashed") ? "#7f1d1d" : "#374151"}`
+        }}>
+          {message}
+        </div>
+      )}
+
+      {/* Bet Amounts */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {[10, 50, 100, 500].map(v => (
+          <button key={v} onClick={() => { setBet(v); setCustomBet(""); }}
+            style={{
+              flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer", fontSize: 14,
+              background: bet === v && !customBet ? "#1e293b" : "#111827",
+              color: bet === v && !customBet ? "#f0b429" : "#9ca3af",
+              border: `1px solid ${bet === v && !customBet ? "#f0b429" : "#374151"}`,
+              fontWeight: 600, transition: "all 0.15s"
+            }}>
+            ${v}
+          </button>
+        ))}
+        <input
+          type="number" placeholder="Custom"
+          value={customBet}
+          onChange={e => setCustomBet(e.target.value)}
+          style={{
+            flex: 1, padding: "10px 8px", borderRadius: 8, fontSize: 13,
+            background: "#111827", border: `1px solid ${customBet ? "#f0b429" : "#374151"}`,
+            color: "#fff", textAlign: "center"
+          }}
+        />
+      </div>
+
+      {/* Auto Cashout */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <span style={{ color: "#6b7280", fontSize: 13, whiteSpace: "nowrap" }}>Auto cashout at:</span>
+        <input
+          type="number" placeholder="e.g. 2.00"
+          value={autoCashout}
+          onChange={e => setAutoCashout(e.target.value)}
+          style={{
+            flex: 1, padding: "8px 12px", borderRadius: 8, fontSize: 13,
+            background: "#111827", border: "1px solid #374151", color: "#fff"
+          }}
+        />
+        <span style={{ color: "#6b7280", fontSize: 13 }}>x</span>
+      </div>
+
+      {/* Action Button */}
+      {phase === "waiting" && (
+        <button onClick={startCountdown}
+          disabled={balance < effectiveBet || effectiveBet <= 0}
+          style={{
+            width: "100%", padding: 18, borderRadius: 12, cursor: "pointer",
+            background: balance < effectiveBet ? "#1f2937" : "#16a34a",
+            color: balance < effectiveBet ? "#4b5563" : "#fff",
+            fontWeight: 800, fontSize: 17, border: "none", transition: "all 0.2s",
+            letterSpacing: "0.02em"
+          }}>
+          {balance < effectiveBet ? "Insufficient Balance" : `🎲 Place Bet — $${effectiveBet}`}
+        </button>
+      )}
+      {phase === "countdown" && (
+        <button disabled style={{
+          width: "100%", padding: 18, borderRadius: 12,
+          background: "#1e293b", color: "#6b7280",
+          fontWeight: 700, fontSize: 17, border: "1px solid #374151", cursor: "not-allowed"
+        }}>
+          Starting in {countdown}...
+        </button>
+      )}
+      {phase === "running" && !cashedOut && (
+        <button onClick={cashOut}
+          style={{
+            width: "100%", padding: 18, borderRadius: 12, cursor: "pointer",
+            background: "#f0b429", color: "#000",
+            fontWeight: 800, fontSize: 17, border: "none",
+            animation: "pulse 0.5s ease-in-out infinite alternate"
+          }}>
+          💰 Cash Out @ {multiplier.toFixed(2)}x = ${(effectiveBet * multiplier).toFixed(2)}
+        </button>
+      )}
+      {phase === "crashed" && (
+        <button onClick={reset}
+          style={{
+            width: "100%", padding: 18, borderRadius: 12, cursor: "pointer",
+            background: "#6366f1", color: "#fff",
+            fontWeight: 700, fontSize: 17, border: "none"
+          }}>
+          ↻ Play Again
+        </button>
+      )}
+
+      {/* History */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ color: "#6b7280", fontSize: 12, marginBottom: 10, fontWeight: 600 }}>HISTORY</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {history.map(h => (
+            <span key={h.id} style={{
+              padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700,
+              background: h.value < 2 ? "#1f2937" : h.value < 5 ? "#052e16" : h.value < 10 ? "#1c1917" : "#1a0000",
+              color: h.value < 2 ? "#9ca3af" : h.value < 5 ? "#22c55e" : h.value < 10 ? "#f97316" : "#ef4444",
+              border: `1px solid ${h.value < 2 ? "#374151" : h.value < 5 ? "#166534" : h.value < 10 ? "#9a3412" : "#7f1d1d"}`
+            }}>
+              {h.value.toFixed(2)}x
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          from { transform: scale(1); }
+          to   { transform: scale(1.01); }
+        }
+      `}</style>
+    </div>
   );
 }

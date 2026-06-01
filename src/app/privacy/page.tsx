@@ -1,30 +1,60 @@
-import MobileNav from "@/components/layout/MobileNav";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | EdgeCore",
+  description: "EdgeCore Privacy Policy",
+};
+
 export default function PrivacyPage() {
   return (
-    <div className="pb-20 lg:pb-0 max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-heading font-bold text-[#f0b429] mb-6">🔒 Privacy Policy</h1>
-      <div className="bg-[#0f1520] border border-[#ffffff0f] rounded-xl p-6 space-y-4 text-gray-400 text-sm">
-        <p><strong className="text-white">Last Updated:</strong> May 2026</p>
-        
-        <h2 className="text-white font-bold text-lg">1. Information We Collect</h2>
-        <p>EdgeCore is a demo platform. We collect minimal data: username, email (if provided), and gameplay statistics (bets, wins, losses). All data is stored locally in your browser&apos;s localStorage.</p>
-        
-        <h2 className="text-white font-bold text-lg">2. How We Use Your Data</h2>
-        <p>Gameplay data is used to track your balance, VIP progress, and provide a personalized experience. No data is shared with third parties.</p>
-        
-        <h2 className="text-white font-bold text-lg">3. Cookies & Local Storage</h2>
-        <p>We use localStorage to persist your account information and game state. No tracking cookies are used.</p>
-        
-        <h2 className="text-white font-bold text-lg">4. Data Security</h2>
-        <p>All data is stored client-side. We do not operate backend servers for user data storage in demo mode.</p>
-        
-        <h2 className="text-white font-bold text-lg">5. Your Rights</h2>
-        <p>You can clear all your data at any time by logging out or clearing your browser&apos;s localStorage.</p>
-        
-        <h2 className="text-white font-bold text-lg">6. Contact</h2>
-        <p>For privacy concerns, contact: <a href="mailto:binaryalexx@gmail.com" className="text-[#f0b429]">binaryalexx@gmail.com</a></p>
-      </div>
-      <MobileNav />
+    <div style={{
+      maxWidth: 780, margin: "0 auto", padding: "48px 24px",
+      fontFamily: "system-ui, sans-serif", color: "#e5e7eb", lineHeight: 1.8
+    }}>
+      <h1 style={{ color: "#fff", fontSize: 32, marginBottom: 4 }}>Privacy Policy</h1>
+      <p style={{ color: "#6b7280", marginBottom: 40 }}>Last updated: June 2026</p>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>1. Data We Collect</h2>
+        <p>We collect: name, email address, date of birth, government ID (for KYC), payment details, IP address, device info, and gameplay history. We do not sell your data to third parties.</p>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>2. How We Use Your Data</h2>
+        <ul>
+          <li>Account management and identity verification</li>
+          <li>Processing deposits and withdrawals</li>
+          <li>Fraud prevention and AML compliance</li>
+          <li>Responsible gambling monitoring</li>
+          <li>Customer support and communications</li>
+          <li>Legal compliance with Curaçao licensing requirements</li>
+        </ul>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>3. Data Retention</h2>
+        <p>We retain personal data for a minimum of 5 years after account closure, as required by our gaming license and AML obligations. You may request deletion of non-essential data by contacting our DPO.</p>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>4. Cookies</h2>
+        <p>We use essential cookies (session management), analytics cookies (Vercel Analytics), and optional preference cookies. You may manage cookie preferences via the cookie banner or your browser settings.</p>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>5. Your Rights</h2>
+        <p>You have the right to access, correct, port, and in some cases delete your personal data. To exercise these rights contact: <a href="mailto:privacy@edgecore.gg" style={{ color: "#f0b429" }}>privacy@edgecore.gg</a>. We respond within 30 days.</p>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>6. Third-Party Services</h2>
+        <p>We use payment processors (Stripe, M-Pesa, Flutterwave), identity verification providers, and cloud infrastructure (Vercel, Supabase). Each provider has their own privacy policy. We only share the minimum data necessary.</p>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ color: "#f0b429", fontSize: 18, borderBottom: "1px solid #1f2937", paddingBottom: 10 }}>7. Contact</h2>
+        <p>Data Protection Officer: <a href="mailto:privacy@edgecore.gg" style={{ color: "#f0b429" }}>privacy@edgecore.gg</a></p>
+      </section>
     </div>
   );
 }

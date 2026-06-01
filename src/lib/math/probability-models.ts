@@ -1,4 +1,4 @@
-﻿// src/lib/math/probability-models.ts
+// src/lib/math/probability-models.ts
 export class ProbabilityModels {
   static expectedValue(payout: number, probability: number, betAmount: number): number {
     return (payout * probability) - betAmount;

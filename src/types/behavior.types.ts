@@ -1,4 +1,4 @@
-﻿// src/types/behavior.types.ts
+// src/types/behavior.types.ts
 export interface UserProfile {
   id: string;
   riskScore: number;

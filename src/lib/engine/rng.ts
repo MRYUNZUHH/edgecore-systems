@@ -1,4 +1,4 @@
-﻿// src/lib/engine/rng.ts
+// src/lib/engine/rng.ts
 import seedrandom from 'seedrandom';
 
 export class RNG {

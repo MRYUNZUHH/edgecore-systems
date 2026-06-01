@@ -1,4 +1,4 @@
-﻿// src/lib/engine/house-edge-system.ts
+// src/lib/engine/house-edge-system.ts
 import { RNG } from './rng';
 
 export class HouseEdgeSystem {

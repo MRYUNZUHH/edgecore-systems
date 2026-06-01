@@ -1,4 +1,4 @@
-﻿// src/lib/behavior/retention-engine.ts
+// src/lib/behavior/retention-engine.ts
 import { UserProfile, BehavioralState, BehaviorTrigger } from '@/types/behavior.types';
 
 export class RetentionEngine {

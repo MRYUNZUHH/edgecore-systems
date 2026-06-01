@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   const { gameType, betAmount, userId } = await request.json();

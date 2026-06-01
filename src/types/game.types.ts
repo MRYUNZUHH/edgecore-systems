@@ -1,4 +1,4 @@
-﻿// src/types/game.types.ts
+// src/types/game.types.ts
 export type GameType = 'dice' | 'crash' | 'roulette' | 'slots' | 'mines';
 
 export interface BetResult {
