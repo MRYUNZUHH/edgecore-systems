@@ -38,5 +38,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, balance: user.demoBalance });
   }
   
+  
+  if (action === "withdraw") {
+    if (!amount || amount < 10) {
+      return NextResponse.json({ error: "Minimum withdrawal is \$10" }, { status: 400 });
+    }
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user || user.demoBalance < amount) {
+      return NextResponse.json({ error: "Insufficient balance" }, { status: 400 });
+    }
+    const updated = await prisma.user.update({
+      where: { id: session.user.id },
+      data: { demoBalance: { decrement: amount } },
+    });
+    await prisma.transaction.create({
+      data: {
+        userId: session.user.id,
+        type: "WITHDRAWAL",
+        amount: -amount,
+        balanceBefore: updated.demoBalance + amount,
+        balanceAfter: updated.demoBalance,
+      },
+    });
+    return NextResponse.json({ success: true, balance: updated.demoBalance });
+  }
+
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }
+
