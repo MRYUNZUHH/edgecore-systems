@@ -3,12 +3,12 @@
     "version":  "15.0.0",
     "private":  true,
     "scripts":  {
-                    "dev":  "next dev",
-                    "build":  "next build",
-                    "start":  "next start",
                     "postinstall":  "prisma generate",
                     "db:push":  "prisma db push",
-                    "db:seed":  "npx tsx prisma/seed.ts"
+                    "db:seed":  "npx tsx prisma/seed.ts",
+                    "build":  "next build",
+                    "start":  "next start",
+                    "dev":  "next dev"
                 },
     "prisma":  {
                    "seed":  "npx tsx prisma/seed.ts"
