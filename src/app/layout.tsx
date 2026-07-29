@@ -1,26 +1,30 @@
+﻿// src/app/layout.tsx
 import type { Metadata } from "next";
+import { Rajdhani } from "next/font/google";
 import "./globals.css";
-import BackgroundCanvas from "@/components/BackgroundCanvas";
-import CasinoBackground from "@/components/casino/CasinoBackground";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import MobileNav from "@/components/layout/MobileNav";
+
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-rajdhani",
+});
 
 export const metadata: Metadata = {
-  title: "EdgeCore | Premium Casino",
+  title: "EdgeCore Systems",
   description: "Premium online casino experience",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <body>
-        <BackgroundCanvas />
-        <CasinoBackground />
-        <div style={{ position: "relative", zIndex: 1 }} className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+    <html lang="en" className={rajdhani.variable}>
+      <body className="bg-[#080b12] text-white font-rajdhani pb-20">
+        {children}
+        <MobileNav />
       </body>
     </html>
   );
