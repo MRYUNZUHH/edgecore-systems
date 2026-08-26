@@ -1,18 +1,22 @@
 ﻿// src/app/wallet/withdraw/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useBalance } from "@/lib/useBalance";
 
 export default function WithdrawPage() {
+  const { mounted, realBalance, setBalanceForMode } = useBalance();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [currentBalance, setCurrentBalance] = useState(0);
 
-  useEffect(() => {
-    const balance = parseFloat(localStorage.getItem("ec_real_balance") || "0");
-    setCurrentBalance(balance);
-  }, []);
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#080b12] text-white flex items-center justify-center">
+        <p className="text-gray-400">Loading withdrawal details...</p>
+      </div>
+    );
+  }
 
   const withdrawAmount = parseFloat(amount) || 0;
   
@@ -30,7 +34,7 @@ export default function WithdrawPage() {
       return;
     }
 
-    if (withdrawAmount > currentBalance) {
+    if (withdrawAmount > realBalance) {
       setMessage("Insufficient balance");
       return;
     }
@@ -38,9 +42,8 @@ export default function WithdrawPage() {
     setLoading(true);
     
     setTimeout(() => {
-      const newBalance = currentBalance - withdrawAmount;
-      localStorage.setItem("ec_real_balance", newBalance.toString());
-      setCurrentBalance(newBalance);
+      const newBalance = realBalance - withdrawAmount;
+      setBalanceForMode(newBalance, "real");
       
       if (feeAmount > 0) {
         setMessage(`✅ Withdrawal of $${withdrawAmount} processed. Service fee: $${feeAmount}. Net received: $${netAmount}`);
@@ -49,10 +52,7 @@ export default function WithdrawPage() {
       }
       
       setLoading(false);
-      setTimeout(() => {
-        setAmount("");
-        window.location.reload();
-      }, 2000);
+      setAmount("");
     }, 1500);
   };
 
@@ -63,7 +63,7 @@ export default function WithdrawPage() {
         
         <div className="bg-[#0f1520] rounded-xl border border-[#1a2235] p-6 mb-8">
           <p className="text-gray-400">Available Balance</p>
-          <p className="text-3xl font-bold text-[#f0b429]">${currentBalance.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-[#f0b429]">${realBalance.toFixed(2)}</p>
         </div>
 
         <div className="bg-yellow-500/10 border border-yellow-500 rounded-xl p-6 mb-8">
@@ -117,7 +117,7 @@ export default function WithdrawPage() {
 
           <button
             onClick={handleWithdraw}
-            disabled={loading || withdrawAmount > currentBalance || withdrawAmount < 10}
+            disabled={loading || withdrawAmount > realBalance || withdrawAmount < 10}
             className="w-full py-3 bg-gradient-to-r from-[#f0b429] to-amber-600 text-black font-bold rounded-lg hover:opacity-90 transition disabled:opacity-50"
           >
             {loading ? "Processing..." : "Withdraw Funds"}

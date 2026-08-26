@@ -1,106 +1,207 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { signOut, useSession } from "next-auth/react";
 
-const BALANCE_KEY = "ec_balance";
+const DEMO_KEY = "ec_balance";
+const REAL_KEY = "ec_real_balance";
+const MODE_KEY = "ec_mode";
 const USERNAME_KEY = "ec_username";
 const WAGER_KEY = "ec_wager_total";
+const AVATAR_KEY = "ec_avatar";
+
+type Mode = "demo" | "real";
+const DEFAULT_DEMO_BALANCE = 10000;
+
+const isBrowser = () => typeof window !== "undefined";
+
+function safeParse(value: string | null, fallback: number) {
+  const parsed = parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getStoredMode(): Mode {
+  if (!isBrowser()) return "demo";
+  const mode = localStorage.getItem(MODE_KEY);
+  return mode === "real" ? "real" : "demo";
+}
+
+function getStoredAvatar(): string {
+  if (!isBrowser()) return "😎";
+  return localStorage.getItem(AVATAR_KEY) || "😎";
+}
+
+function getStoredDemoBalance(): number {
+  if (!isBrowser()) return DEFAULT_DEMO_BALANCE;
+  return safeParse(localStorage.getItem(DEMO_KEY), DEFAULT_DEMO_BALANCE);
+}
+
+function getStoredRealBalance(): number {
+  if (!isBrowser()) return 0;
+  return safeParse(localStorage.getItem(REAL_KEY), 0);
+}
+
+function getStoredUsername(): string {
+  if (!isBrowser()) return "";
+  return localStorage.getItem(USERNAME_KEY) || "";
+}
+
+function getStoredWager(): number {
+  if (!isBrowser()) return 0;
+  return safeParse(localStorage.getItem(WAGER_KEY), 0);
+}
 
 export function useBalance() {
-  const [balance, setBalance] = useState(10000);
+  const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
+  const [mode, setMode] = useState<Mode>("demo");
+  const [demoBalance, setDemoBalance] = useState(DEFAULT_DEMO_BALANCE);
+  const [realBalance, setRealBalance] = useState(0);
   const [username, setUsername] = useState("");
   const [totalWagered, setTotalWagered] = useState(0);
-  const [mounted, setMounted] = useState(false);
+  const [avatar, setAvatar] = useState("😎");
 
-  // Read from localStorage only on client mount
   useEffect(() => {
     setMounted(true);
-    try {
-      const storedBalance = localStorage.getItem(BALANCE_KEY);
-      if (storedBalance) setBalance(parseFloat(storedBalance));
-      const storedUser = localStorage.getItem(USERNAME_KEY);
-      if (storedUser) setUsername(storedUser);
-      const storedWager = localStorage.getItem(WAGER_KEY);
-      if (storedWager) setTotalWagered(parseFloat(storedWager));
-    } catch (e) {}
   }, []);
 
-  // Listen for storage changes from other tabs/components
   useEffect(() => {
     if (!mounted) return;
-    const handler = () => {
-      const storedBalance = localStorage.getItem(BALANCE_KEY);
-      if (storedBalance) setBalance(parseFloat(storedBalance));
-      const storedUser = localStorage.getItem(USERNAME_KEY);
-      if (storedUser) setUsername(storedUser);
-      const storedWager = localStorage.getItem(WAGER_KEY);
-      if (storedWager) setTotalWagered(parseFloat(storedWager));
+
+    const syncState = () => {
+      setMode(getStoredMode());
+      setDemoBalance(getStoredDemoBalance());
+      setRealBalance(getStoredRealBalance());
+      setUsername(getStoredUsername());
+      setTotalWagered(getStoredWager());
+      setAvatar(getStoredAvatar());
     };
-    window.addEventListener("storage", handler);
-    // Also poll every 500ms to catch same-tab updates
-    const interval = setInterval(handler, 500);
-    return () => {
-      window.removeEventListener("storage", handler);
-      clearInterval(interval);
-    };
+
+    syncState();
+    window.addEventListener("storage", syncState);
+    return () => window.removeEventListener("storage", syncState);
   }, [mounted]);
 
-  // Deduct bet amount from balance
-  const placeBet = useCallback((amount: number): boolean => {
-    const currentBalance = parseFloat(localStorage.getItem(BALANCE_KEY) || "10000");
-    if (amount > currentBalance) return false;
-    const newBalance = currentBalance - amount;
-    localStorage.setItem(BALANCE_KEY, newBalance.toString());
-    setBalance(newBalance);
-    // Update wager total
-    const currentWager = parseFloat(localStorage.getItem(WAGER_KEY) || "0");
-    const newWager = currentWager + amount;
-    localStorage.setItem(WAGER_KEY, newWager.toString());
-    setTotalWagered(newWager);
-    return true;
+  useEffect(() => {
+    if (!mounted) return;
+    if (status === "authenticated" && session?.user?.name) {
+      setUsername(session.user.name);
+      try {
+        localStorage.setItem(USERNAME_KEY, session.user.name);
+      } catch (e) {}
+    }
+  }, [mounted, status, session?.user?.name]);
+
+  const getActiveBalance = useCallback(() => {
+    return mode === "real" ? realBalance : demoBalance;
+  }, [mode, demoBalance, realBalance]);
+
+  const placeBet = useCallback(
+    (amount: number): boolean => {
+      if (!isBrowser()) return false;
+      const key = mode === "real" ? REAL_KEY : DEMO_KEY;
+      const currentBalance = safeParse(localStorage.getItem(key), mode === "real" ? 0 : DEFAULT_DEMO_BALANCE);
+      if (amount > currentBalance) return false;
+      const newBalance = currentBalance - amount;
+      localStorage.setItem(key, newBalance.toString());
+      if (mode === "real") {
+        setRealBalance(newBalance);
+      } else {
+        setDemoBalance(newBalance);
+      }
+
+      const currentWager = safeParse(localStorage.getItem(WAGER_KEY), 0);
+      const newWager = currentWager + amount;
+      localStorage.setItem(WAGER_KEY, newWager.toString());
+      setTotalWagered(newWager);
+      return true;
+    },
+    [mode]
+  );
+
+  const addWinnings = useCallback(
+    (amount: number) => {
+      if (!isBrowser()) return;
+      const key = mode === "real" ? REAL_KEY : DEMO_KEY;
+      const currentBalance = safeParse(localStorage.getItem(key), mode === "real" ? 0 : DEFAULT_DEMO_BALANCE);
+      const newBalance = currentBalance + amount;
+      localStorage.setItem(key, newBalance.toString());
+      if (mode === "real") {
+        setRealBalance(newBalance);
+      } else {
+        setDemoBalance(newBalance);
+      }
+    },
+    [mode]
+  );
+
+  const switchMode = useCallback((newMode: Mode) => {
+    if (!isBrowser()) return;
+    localStorage.setItem(MODE_KEY, newMode);
+    setMode(newMode);
   }, []);
 
-  // Add winnings to balance
-  const addWinnings = useCallback((amount: number) => {
-    const currentBalance = parseFloat(localStorage.getItem(BALANCE_KEY) || "10000");
-    const newBalance = currentBalance + amount;
-    localStorage.setItem(BALANCE_KEY, newBalance.toString());
-    setBalance(newBalance);
-  }, []);
-
-  // Login sets username and resets balance to 10000
   const login = useCallback((name: string) => {
-    localStorage.setItem(USERNAME_KEY, name);
-    localStorage.setItem(BALANCE_KEY, "10000");
-    localStorage.setItem(WAGER_KEY, "0");
+    if (!isBrowser()) return;
+    try {
+      localStorage.setItem(USERNAME_KEY, name);
+      localStorage.setItem(DEMO_KEY, DEFAULT_DEMO_BALANCE.toString());
+      localStorage.setItem(WAGER_KEY, "0");
+      localStorage.setItem(MODE_KEY, "demo");
+    } catch (e) {}
+
     setUsername(name);
-    setBalance(10000);
+    setDemoBalance(DEFAULT_DEMO_BALANCE);
+    setRealBalance(0);
     setTotalWagered(0);
+    setMode("demo");
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(USERNAME_KEY);
-    localStorage.removeItem(BALANCE_KEY);
-    localStorage.removeItem(WAGER_KEY);
+  const logout = useCallback(async () => {
+    if (status === "authenticated") {
+      await signOut({ redirect: false });
+    }
+
+    if (isBrowser()) {
+      try {
+        localStorage.removeItem(USERNAME_KEY);
+        localStorage.removeItem(DEMO_KEY);
+        localStorage.removeItem(REAL_KEY);
+        localStorage.removeItem(WAGER_KEY);
+        localStorage.removeItem(MODE_KEY);
+        localStorage.removeItem(AVATAR_KEY);
+      } catch (e) {}
+    }
+
     setUsername("");
-    setBalance(10000);
+    setDemoBalance(DEFAULT_DEMO_BALANCE);
+    setRealBalance(0);
     setTotalWagered(0);
-  }, []);
+    setMode("demo");
+    setAvatar("😎");
+  }, [status]);
 
   const resetDemo = useCallback(() => {
-    localStorage.setItem(BALANCE_KEY, "10000");
-    setBalance(10000);
+    if (!isBrowser()) return;
+    localStorage.setItem(DEMO_KEY, DEFAULT_DEMO_BALANCE.toString());
+    setDemoBalance(DEFAULT_DEMO_BALANCE);
   }, []);
 
-  const isLoggedIn = mounted && !!username;
+  const activeBalance = getActiveBalance();
+  const isLoggedIn = mounted && status === "authenticated";
 
   return {
-    balance,
+    balance: activeBalance,
     username,
+    mode,
+    avatar,
+    demoBalance,
+    realBalance,
     totalWagered,
     isLoggedIn,
     mounted,
     placeBet,
     addWinnings,
+    switchMode,
     login,
     logout,
     resetDemo,

@@ -3,19 +3,18 @@
 
 import { useState, useEffect } from "react";
 import ModeSwitcher from "@/components/ModeSwitcher";
+import { useBalance } from "@/lib/useBalance";
 
 export default function DepositPage() {
+  const { mounted, mode, realBalance, demoBalance, setBalanceForMode } = useBalance();
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
   const [mpesaMessage, setMpesaMessage] = useState("");
-  const [transactionId, setTransactionId] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [verificationStatus, setVerificationStatus] = useState<"pending" | "confirmed" | "rejected" | null>(null);
   const [bonusPreview, setBonusPreview] = useState(0);
   const [exchangeRate, setExchangeRate] = useState(130);
-  const [mode, setMode] = useState<"demo" | "real">("demo");
-  const [balance, setBalance] = useState(0);
 
   const TILL_NUMBER = "4753611";
   const BUSINESS_NAME = "EdgeCore Systems";
@@ -25,21 +24,10 @@ export default function DepositPage() {
       try {
         const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
         const data = await res.json();
-        if (data.rates.KES) setExchangeRate(data.rates.KES);
+        if (data.rates?.KES) setExchangeRate(data.rates.KES);
       } catch (error) {}
     };
     fetchRate();
-    
-    const currentMode = localStorage.getItem("ec_mode") as "demo" | "real" | null;
-    if (currentMode) setMode(currentMode);
-    
-    if (currentMode === "real") {
-      const realBalance = parseFloat(localStorage.getItem("ec_real_balance") || "0");
-      setBalance(realBalance);
-    } else {
-      const demoBalance = parseFloat(localStorage.getItem("ec_balance") || "10000");
-      setBalance(demoBalance);
-    }
   }, []);
 
   useEffect(() => {
@@ -95,20 +83,16 @@ export default function DepositPage() {
         // Auto-confirm after 30 seconds (for demo)
         setTimeout(() => {
           setVerificationStatus("confirmed");
-          // Credit the balance
-          const currentBalance = parseFloat(localStorage.getItem("ec_real_balance") || "0");
           let bonusAmount = 0;
           if (depositAmount >= 10 && depositAmount < 100) bonusAmount = 10;
           else if (depositAmount >= 100 && depositAmount < 600) bonusAmount = 50;
           else if (depositAmount >= 500) bonusAmount = 150;
           
-          const newBalance = currentBalance + depositAmount + bonusAmount;
-          localStorage.setItem("ec_real_balance", newBalance.toString());
-          setBalance(newBalance);
+          const newBalance = realBalance + depositAmount + bonusAmount;
+          setBalanceForMode(newBalance, "real");
           
           setMessage(`✅ Payment confirmed! +$${bonusAmount} BONUS added! New balance: $${newBalance}`);
           setLoading(false);
-          setTimeout(() => window.location.reload(), 2000);
         }, 30000);
       } else {
         setMessage("❌ " + (data.error || "Verification failed"));
@@ -130,7 +114,7 @@ export default function DepositPage() {
         <div className="bg-[#0f1520] rounded-xl border border-[#1a2235] p-4 mb-6">
           <p className="text-gray-400">Available {mode === "real" ? "REAL" : "DEMO"} Balance</p>
           <p className={`text-3xl font-bold ${mode === "real" ? "text-green-400" : "text-[#f0b429]"}`}>
-            ${balance.toFixed(2)}
+            ${mode === "real" ? realBalance.toFixed(2) : demoBalance.toFixed(2)}
           </p>
         </div>
         

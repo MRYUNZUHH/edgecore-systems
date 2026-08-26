@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 
 const names = ["CryptoKing", "LuckySpin", "DiamondHands", "NeonNinja", "JackpotJack", "AceHigh", "SlotSiren", "CrashQueen"];
 
+import BetSlip from "@/components/sports/BetSlip";
+
 export default function RightPanel() {
   const [bets, setBets] = useState<any[]>([]);
 
@@ -45,6 +47,9 @@ export default function RightPanel() {
       </div>
       <div className="p-4 border-t border-white/10">
         <div className="text-xs text-gray-500 text-center">Real-time activity feed</div>
+      </div>
+      <div className="border-t border-white/5 p-4 bg-[#071017]">
+        <BetSlip />
       </div>
     </aside>
   );

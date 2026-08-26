@@ -1,43 +1,17 @@
 ﻿// src/components/layout/MobileNav.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useBalance } from "@/lib/useBalance";
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const [mode, setMode] = useState<"demo" | "real">("demo");
+  const { mode, switchMode, mounted } = useBalance();
   const [showModeMenu, setShowModeMenu] = useState(false);
 
-  useEffect(() => {
-    const savedMode = localStorage.getItem("ec_mode") as "demo" | "real" | null;
-    if (savedMode) {
-      setMode(savedMode);
-    }
-  }, []);
-
-  const switchMode = (newMode: "demo" | "real") => {
-    setMode(newMode);
-    localStorage.setItem("ec_mode", newMode);
-    
-    if (newMode === "demo") {
-      // Show demo balance, hide real
-      const demoBalance = localStorage.getItem("ec_balance") || "10000";
-      // Keep real balance stored
-      const realBalance = localStorage.getItem("ec_real_balance") || "0";
-      localStorage.setItem("ec_real_balance_stored", realBalance);
-      localStorage.setItem("ec_real_balance", "0");
-      localStorage.setItem("ec_balance", demoBalance);
-    } else {
-      // Show real balance, hide demo
-      const storedRealBalance = localStorage.getItem("ec_real_balance_stored") || "0";
-      localStorage.setItem("ec_real_balance", storedRealBalance);
-      localStorage.setItem("ec_balance", "0");
-    }
-    
-    window.location.reload();
-  };
+  if (!mounted) return null;
 
   const navItems = [
     { href: "/", label: "🏠 Home" },
@@ -45,6 +19,11 @@ export default function MobileNav() {
     { href: "/wallet/deposit", label: "💰 Deposit" },
     { href: "/profile", label: "👤 Profile" },
   ];
+
+  const handleSwitchMode = (newMode: "demo" | "real") => {
+    switchMode(newMode);
+    setShowModeMenu(false);
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#0f1520] border-t border-[#1a2235] z-50">

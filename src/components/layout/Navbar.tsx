@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
+import { useBalance } from "@/lib/useBalance";
 
 const navLinks = [
   { h: "/", l: "Home" },
@@ -15,49 +16,20 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { balance, username, isLoggedIn, logout, mode, avatar, switchMode, resetDemo, demoBalance, realBalance } = useBalance();
   const [mounted, setMounted] = useState(false);
-  const [username, setUsername] = useState("");
-  const [demoBalance, setDemoBalance] = useState(10000);
-  const [realBalance, setRealBalance] = useState(0);
-  const [accountMode, setAccountMode] = useState<"demo" | "real">("demo");
-  const [avatar, setAvatar] = useState("😎");
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const update = () => {
-      setUsername(localStorage.getItem("ec_username") || "");
-      setDemoBalance(parseFloat(localStorage.getItem("ec_balance") || "10000"));
-      setRealBalance(parseFloat(localStorage.getItem("ec_real_balance") || "0"));
-      setAccountMode((localStorage.getItem("ec_mode") || "demo") as "demo" | "real");
-      setAvatar(localStorage.getItem("ec_avatar") || "😎");
-    };
-    update();
-    const interval = setInterval(update, 500);
-    window.addEventListener("storage", update);
-    return () => { clearInterval(interval); window.removeEventListener("storage", update); };
   }, []);
 
-  const switchMode = (mode: "demo" | "real") => {
-    localStorage.setItem("ec_mode", mode);
-    setAccountMode(mode);
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
   };
 
-  const resetDemo = () => {
-    localStorage.setItem("ec_balance", "10000");
-    setDemoBalance(10000);
-  };
-
-  const logout = () => {
-    ["ec_username", "ec_balance", "ec_real_balance", "ec_wager_total", "ec_mode", "ec_avatar"].forEach((k) =>
-      localStorage.removeItem(k)
-    );
-    setUsername(""); setDemoBalance(10000); setRealBalance(0);
-    setAccountMode("demo"); setShowDropdown(false);
-  };
-
-  const isLoggedIn = mounted && !!username;
-  const activeBalance = accountMode === "demo" ? demoBalance : realBalance;
+  const activeBalance = balance;
 
   if (!mounted) {
     return (
@@ -105,13 +77,13 @@ export default function Navbar() {
               <div className="hidden sm:flex bg-[#0f1520] border border-[#ffffff0f] rounded-full p-0.5 gap-0.5">
                 <button
                   onClick={() => switchMode("demo")}
-                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${accountMode === "demo" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" : "text-gray-500 hover:text-white"}`}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${mode === "demo" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" : "text-gray-500 hover:text-white"}`}
                 >
                   DEMO
                 </button>
                 <button
                   onClick={() => switchMode("real")}
-                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${accountMode === "real" ? "bg-[#f0b429] text-black shadow-lg shadow-[#f0b429]/20" : "text-gray-500 hover:text-white"}`}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${mode === "real" ? "bg-[#f0b429] text-black shadow-lg shadow-[#f0b429]/20" : "text-gray-500 hover:text-white"}`}
                 >
                   REAL
                 </button>
@@ -119,9 +91,9 @@ export default function Navbar() {
 
               {/* Balance pill */}
               <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 border text-sm font-bold
-                ${accountMode === "demo" ? "bg-blue-500/10 border-blue-500/25 text-blue-400" : "bg-[#f0b429]/10 border-[#f0b429]/25 text-[#f0b429]"}`}>
+                ${mode === "demo" ? "bg-blue-500/10 border-blue-500/25 text-blue-400" : "bg-[#f0b429]/10 border-[#f0b429]/25 text-[#f0b429]"}`}>
                 ${activeBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                {accountMode === "demo" && (
+                {mode === "demo" && (
                   <button onClick={resetDemo} className="text-[10px] opacity-60 hover:opacity-100 ml-0.5" title="Reset demo">↻</button>
                 )}
               </div>
@@ -142,7 +114,7 @@ export default function Navbar() {
                         <span className="text-3xl">{avatar}</span>
                         <div>
                           <p className="text-white text-sm font-bold">{username}</p>
-                          <p className="text-gray-500 text-xs">{accountMode === "demo" ? "Demo Account" : "Real Account"}</p>
+                          <p className="text-gray-500 text-xs">{mode === "demo" ? "Demo Account" : "Real Account"}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -162,7 +134,7 @@ export default function Navbar() {
                         {item.label}
                       </Link>
                     ))}
-                    <button onClick={logout} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition border-t border-[#ffffff0a]">
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition border-t border-[#ffffff0a]">
                       🚪  Logout
                     </button>
                   </div>

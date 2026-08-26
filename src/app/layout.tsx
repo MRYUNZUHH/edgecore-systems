@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import { Rajdhani } from "next/font/google";
 import "./globals.css";
-import MobileNav from "@/components/layout/MobileNav";
+import AppShell from "@/components/layout/AppShell";
+import Header from "@/components/layout/Header";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const rajdhani = Rajdhani({
   subsets: ["latin"],
@@ -23,8 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={rajdhani.variable}>
       <body className="bg-[#080b12] text-white font-rajdhani pb-20">
-        {children}
-        <MobileNav />
+        <AuthProvider>
+          <Header />
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   );

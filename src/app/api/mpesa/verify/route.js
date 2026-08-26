@@ -79,15 +79,7 @@ export async function PUT(request) {
             }, { status: 404 });
         }
         
-        if (confirmed) {
-            verification.status = 'confirmed';
-            // Credit the user's balance
-            const currentBalance = parseFloat(localStorage.getItem("ec_real_balance") || "0");
-            const newBalance = currentBalance + verification.amount;
-            localStorage.setItem("ec_real_balance", newBalance.toString());
-        } else {
-            verification.status = 'rejected';
-        }
+        verification.status = confirmed ? 'confirmed' : 'rejected';
         
         return NextResponse.json({
             success: true,
