@@ -37,7 +37,7 @@ export default function LiveWinsFeed() {
   useEffect(() => {
     const interval = setInterval(() => {
       setWins(prev => [randomWin(), ...prev.slice(0, 11)]);
-    }, 2500);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 

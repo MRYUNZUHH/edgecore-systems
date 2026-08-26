@@ -7,7 +7,7 @@ export default function LiveTicker() {
   useEffect(() => {
     const gen = () => `${names[Math.floor(Math.random()*6)]} won $${(Math.random()*5000+100).toFixed(0)} on ${games[Math.floor(Math.random()*6)]}`;
     setItems(Array.from({length:8},gen));
-    const i = setInterval(() => setItems(p=>[gen(),...p.slice(0,20)]),3000);
+    const i = setInterval(() => setItems(p=>[gen(),...p.slice(0,20)]),5000);
     return ()=>clearInterval(i);
   },[]);
   return (

@@ -1,7 +1,7 @@
 "use client";
-'use client';
+import dynamic from 'next/dynamic';
 import { useStore } from '@/store/game-store';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+const OperatorProfitChart = dynamic(() => import('./OperatorProfitChart'), { ssr: false, loading: () => <div className="h-64 flex items-center justify-center text-sm text-gray-400">Loading chart...</div> });
 
 export function OperatorDashboard() {
   const { betHistory, balance } = useStore();
@@ -19,11 +19,7 @@ export function OperatorDashboard() {
         <div className="glass-card rounded-xl p-4"><p className="text-xs text-gray-400">Edge</p><p className="text-2xl font-bold">94%</p></div>
         <div className="glass-card rounded-xl p-4"><p className="text-xs text-gray-400">Total Bets</p><p className="text-2xl font-bold text-white">{balance.totalBets}</p></div>
       </div>
-      <div className="glass-panel rounded-2xl p-4 h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={profitData.slice(-50)}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" /><XAxis dataKey="bet" stroke="#666" /><YAxis stroke="#666" /><Tooltip contentStyle={{backgroundColor:'#0a0a15',border:'1px solid #d4af37', borderRadius:'8px'}} /><Line type="monotone" dataKey="profit" stroke="#00ff88" strokeWidth={2} /></LineChart>
-        </ResponsiveContainer>
-      </div>
+      <OperatorProfitChart data={profitData.slice(-50)} />
     </div>
   );
 }

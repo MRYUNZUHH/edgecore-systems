@@ -10,7 +10,7 @@ export default function TopNav() {
   const balance = wallet?.cashBalance ?? 0;
 
   useEffect(() => {
-    const interval = setInterval(() => setJackpot(prev => prev + Math.floor(Math.random() * 50)), 3000);
+    const interval = setInterval(() => setJackpot(prev => prev + Math.floor(Math.random() * 50)), 6000);
     return () => clearInterval(interval);
   }, []);
 

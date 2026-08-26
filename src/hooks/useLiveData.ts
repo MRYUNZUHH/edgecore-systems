@@ -31,7 +31,7 @@ export function useLiveFeed() {
       multiplier: parseFloat((Math.random()*5+1).toFixed(2)),
     });
     setFeed(Array.from({length:6}, gen));
-    const interval = setInterval(() => setFeed(prev => [gen(), ...prev].slice(0,10)), 2500);
+    const interval = setInterval(() => setFeed(prev => [gen(), ...prev].slice(0,10)), 5000);
     return () => clearInterval(interval);
   }, []);
   return feed;

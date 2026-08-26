@@ -172,7 +172,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setWinIdx((i) => (i + 1) % recentWins.length), 3000);
+    const t = setInterval(() => setWinIdx((i) => (i + 1) % recentWins.length), 5000);
     return () => clearInterval(t);
   }, []);
 

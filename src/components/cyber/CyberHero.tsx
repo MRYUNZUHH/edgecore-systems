@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CountUp from "react-countup";
@@ -21,10 +21,10 @@ export default function CyberHero() {
   const [recentWins, setRecentWins] = useState<string[]>([]);
 
   useEffect(() => {
-    const jp = setInterval(() => setJackpot(p => p + Math.floor(Math.random() * 200)), 1500);
-    const pl = setInterval(() => setPlayers(p => p + Math.floor(Math.random() * 5 - 2)), 3000);
+    const jp = setInterval(() => setJackpot(p => p + Math.floor(Math.random() * 200)), 4000);
+    const pl = setInterval(() => setPlayers(p => p + Math.floor(Math.random() * 5 - 2)), 5000);
     const wins = ["CryptoKing +$2,450", "NeonNinja +$8,900", "DiamondHands +$15,200", "LuckySpin +$3,100"];
-    const rw = setInterval(() => setRecentWins(w => [wins[Math.floor(Math.random()*wins.length)], ...w].slice(0,5)), 4000);
+    const rw = setInterval(() => setRecentWins(w => [wins[Math.floor(Math.random()*wins.length)], ...w].slice(0,5)), 6000);
     setRecentWins(wins);
     return () => { clearInterval(jp); clearInterval(pl); clearInterval(rw); };
   }, []);

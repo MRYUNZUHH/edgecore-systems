@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "@/components/ui/DynamicMotion";
 
 const names = ["JD", "MK", "AL", "CR", "NP", "SW", "BT", "KM"];
 
@@ -16,7 +16,7 @@ export default function LiveWinsTicker() {
     });
     
     setWins(Array.from({ length: 5 }, generate));
-    const interval = setInterval(() => setWins(prev => [generate(), ...prev].slice(0, 10)), 3000);
+    const interval = setInterval(() => setWins(prev => [generate(), ...prev].slice(0, 10)), 5000);
     return () => clearInterval(interval);
   }, []);
 

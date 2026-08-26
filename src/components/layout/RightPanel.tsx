@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
+import dynamic from "next/dynamic";
 
 const names = ["CryptoKing", "LuckySpin", "DiamondHands", "NeonNinja", "JackpotJack", "AceHigh", "SlotSiren", "CrashQueen"];
 
-import BetSlip from "@/components/sports/BetSlip";
+const BetSlip = dynamic(() => import("@/components/sports/BetSlip"), { ssr: false });
 
 export default function RightPanel() {
   const [bets, setBets] = useState<any[]>([]);
@@ -18,7 +19,7 @@ export default function RightPanel() {
       multiplier: (Math.random() * 5 + 1).toFixed(2),
     });
     setBets(Array.from({ length: 6 }, gen));
-    const interval = setInterval(() => setBets(prev => [gen(), ...prev].slice(0, 10)), 2500);
+    const interval = setInterval(() => setBets(prev => [gen(), ...prev].slice(0, 10)), 5000);
     return () => clearInterval(interval);
   }, []);
 

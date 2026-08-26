@@ -1,7 +1,7 @@
 "use client";
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/components/ui/DynamicMotion';
 import { useStore } from '@/store/game-store';
 import { RuleModal } from '@/components/ui/RuleModal';
 
@@ -33,7 +33,7 @@ export function GameLobby() {
     setBets(gen());
     const interval = setInterval(() => {
       setBets(prev => [gen()[0], ...prev.slice(0,4)]);
-    }, 3000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 

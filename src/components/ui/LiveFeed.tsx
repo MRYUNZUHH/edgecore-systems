@@ -32,7 +32,7 @@ export default function LiveFeed() {
     setItems(Array.from({ length: 10 }, makeItem));
     const interval = setInterval(() => {
       setItems(prev => [makeItem(), ...prev].slice(0, 20));
-    }, 2500 + Math.random() * 2000);
+    }, 5000 + Math.random() * 3000);
     return () => clearInterval(interval);
   }, []);
 

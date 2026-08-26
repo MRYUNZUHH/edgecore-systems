@@ -57,7 +57,7 @@ trendingTopics.forEach((topic, i) => {
   });
 });
 
-// Update prices every 3 seconds
+// Update prices every 6 seconds
 setInterval(() => {
   markets.forEach((market, id) => {
     const volatility = Math.random() * 4 - 2;
@@ -68,7 +68,7 @@ setInterval(() => {
     market.priceHistory.push({ time: Date.now(), price: newYes });
     if (market.priceHistory.length > 100) market.priceHistory.shift();
   });
-}, 3000);
+}, 6000);
 
 export const marketEngine = {
   getAllMarkets: () => Array.from(markets.values()),
