@@ -1,8 +1,6 @@
-import dynamic from "next/dynamic";
 import Sidebar from "./Sidebar";
 import MobileNav from "./MobileNav";
-
-const RightPanel = dynamic(() => import("./RightPanel"), { ssr: false });
+import RightPanel from "./RightPanel";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
