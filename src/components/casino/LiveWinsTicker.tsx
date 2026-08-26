@@ -1,6 +1,6 @@
 "use client";
 import { useLiveFeed } from "@/hooks/useLiveData";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
 
 export default function LiveWinsTicker() {
   const feed = useLiveFeed();

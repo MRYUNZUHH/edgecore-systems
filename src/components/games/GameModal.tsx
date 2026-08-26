@@ -1,5 +1,5 @@
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "@/components/ui/DynamicMotion";
 import AviatorGame from "./AviatorGame";
 import MinesGame from "./MinesGame";
 

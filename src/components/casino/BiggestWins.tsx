@@ -1,6 +1,6 @@
 "use client";
 import { useBiggestWins } from "@/hooks/useLiveData";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
 import { Trophy } from "lucide-react";
 
 export default function BiggestWins() {
