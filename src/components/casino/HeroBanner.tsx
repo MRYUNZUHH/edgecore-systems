@@ -1,5 +1,4 @@
-"use client";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
 import Link from "next/link";
 export default function HeroBanner() {
   return (
