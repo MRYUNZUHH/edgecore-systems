@@ -36,10 +36,10 @@ export default function Sidebar() {
         </div>
       </div>
       
-      {user && (
+      {user && user.username && (
         <div className="p-4 border-b border-[#ffffff0f]">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full bg-[#161e2e] flex items-center justify-center text-sm font-bold">{user.username.slice(0,2).toUpperCase()}</div>
+            <div className="w-8 h-8 rounded-full bg-[#161e2e] flex items-center justify-center text-sm font-bold">{String(user.username).slice(0,2).toUpperCase()}</div>
             <div>
               <p className="text-sm text-white">{user.username}</p>
               <p className="text-xs text-[#f5c842]">VIP {user.vipLevel}</p>
