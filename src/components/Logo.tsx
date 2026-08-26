@@ -1,5 +1,3 @@
-"use client";
-
 interface LogoProps {
   variant?: 'full' | 'icon-only' | 'wordmark-only' | 'monochrome' | 'inverted';
   size?: 'sm' | 'md' | 'lg' | 'xl';

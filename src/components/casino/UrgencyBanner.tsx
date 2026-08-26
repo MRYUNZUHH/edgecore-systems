@@ -1,6 +1,7 @@
 "use client";
 import { useLivePlayers } from "@/hooks/useLiveData";
-import CountUp from "react-countup";
+import dynamic from 'next/dynamic';
+const CountUp = dynamic(() => import('react-countup'), { ssr: false, loading: () => () => null });
 import { Users, Zap } from "lucide-react";
 
 export default function UrgencyBanner() {

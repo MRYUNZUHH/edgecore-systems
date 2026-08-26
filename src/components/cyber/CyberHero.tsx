@@ -2,7 +2,8 @@
 import { motion } from "@/components/ui/DynamicMotion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import CountUp from "react-countup";
+import dynamic from "next/dynamic";
+const CountUp = dynamic(() => import('react-countup'), { ssr: false, loading: () => () => null });
 
 const floatingAssets = [
   { emoji: "💎", size: "text-6xl", delay: 0 },

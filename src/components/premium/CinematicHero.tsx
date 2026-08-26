@@ -1,8 +1,9 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion } from "@/components/ui/DynamicMotion";
 import { useEffect, useState } from "react";
 import { Sparkles, Star, ArrowRight } from "lucide-react";
-import CountUp from "react-countup";
+import dynamic from "next/dynamic";
+const CountUp = dynamic(() => import('react-countup'), { ssr: false, loading: () => () => null });
 import Link from "next/link";
 
 const floatingIcons = ["🎰","🎲","💰","💎","👑","🪙","♠️","♦️","🎯","🚀"];
